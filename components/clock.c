@@ -1,0 +1,163 @@
+#include "clock.h"
+
+char segdata[] = {
+    0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, // 0~9
+    0x40 // '-'
+};
+
+void tm1637_start(){
+    digitalWrite(CLK, 1);
+    usleep(140);
+    digitalWrite(DIO, 1);
+    usleep(140);
+    digitalWrite(DIO, 0);
+    usleep(140);
+    digitalWrite(CLK, 0);
+    usleep(140);
+}
+
+void tm1637_stop(){
+    digitalWrite(CLK, 0);
+    usleep(140);
+    digitalWrite(DIO, 0);
+    usleep(140);
+    digitalWrite(CLK, 1);
+    usleep(140);
+    digitalWrite(DIO, 1);
+    usleep(140);
+}
+
+void write_bit(char bit) {
+    digitalWrite(CLK, 0);
+    usleep(140);
+    if(bit)
+        digitalWrite(DIO, 1);
+    else
+        digitalWrite(DIO, 0);
+    usleep(140);
+    digitalWrite(CLK, 1);
+}
+
+void write_byte(char data) {
+    char i = 0;
+    for(i = 0; i < 8; i++) {
+        write_bit((data>>i)&0x01);
+    }
+    digitalWrite(CLK, 0);
+    usleep(140);
+    digitalWrite(DIO, 1);
+    usleep(140);
+    digitalWrite(CLK, 1);
+    usleep(140);
+    pinMode(DIO, INPUT);
+    while(digitalRead(DIO));
+    pinMode(DIO, OUTPUT);
+}
+
+void write_command(char cmd){
+    tm1637_start();
+    write_byte(cmd);
+    tm1637_stop();
+}
+
+void write_data(char addr, char data){
+    tm1637_start();
+    write_byte(addr);
+    write_byte(data);
+    tm1637_stop();
+}
+
+void ascii_to_digits(char *input, int len){
+    for (int i = 0; i < len; i++){
+        char c = input[i];
+        if (c >= '0' && c <= '9') {
+            input[i] = segdata[c - '0'];
+        }
+        else if (c == '-') {
+            input[i] = segdata[10];
+        }
+        else {
+            input[i] = 0x00;
+        }
+    }
+}
+
+void time_display(int h_shi, int h_ge, int m_shi, int m_ge){
+    write_command(0x40);
+    write_command(0x44);
+    write_data(0xc0, segdata[h_shi]);
+    write_data(0xc1, segdata[h_ge]);
+    write_data(0xc2, segdata[m_shi]);
+    write_data(0xc3, segdata[m_ge]);
+    write_command(0x88);
+}
+
+void data_display(char *data) {
+    write_command(0x40);
+    write_command(0x44);
+    write_data(0xc0, data[0]);
+    write_data(0xc1, data[1]);
+    write_data(0xc2, data[2]);
+    write_data(0xc3, data[3]);
+    write_command(0x88);
+}
+
+void tm1637_init(){
+    if(wiringPiSetupGpio() < 0) {
+        perror("init失败");
+        exit(1);
+    }
+    pinMode(CLK,OUTPUT);
+    pinMode(DIO,OUTPUT);
+}
+
+void roll_display(char *data, int len) {
+    // 分配足够的内存给temp
+    char *temp = malloc(len + 8); // 前后各留4个空格
+    if (temp == NULL) {
+        perror("内存分配失败");
+        return;
+    }
+    
+    // 初始化temp
+    memset(temp, ' ', 4); // 前4个空格
+    memcpy(temp + 4, data, len); // 中间是数据
+    memset(temp + 4 + len, ' ', 4); // 后4个空格
+  
+    ascii_to_digits(temp, len + 8);
+
+    int i = 0; 
+    while(1){
+        // 显示当前4个字符
+        data_display(temp + i);
+        
+        if(++i == len + 4){
+            i = 0;
+        }
+        sleep(1);
+    }
+    
+    free(temp); // 虽然这里不会执行到，但良好的习惯是释放内存
+}
+
+void show_clock(){
+    while(1){
+        time_t rawtime;
+        struct tm *timeinfo;
+    
+        // 获取当前时间
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
+        // 提取小时和分钟的各位数字
+        int h_shi = timeinfo->tm_hour / 10;
+        int h_ge = timeinfo->tm_hour % 10;
+        int m_shi = timeinfo->tm_min / 10;
+        int m_ge = timeinfo->tm_min % 10;
+
+        // 显示时间
+        time_display(h_shi, h_ge, m_shi, m_ge);
+        sleep(30);
+    }
+
+}
+
