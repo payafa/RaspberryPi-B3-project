@@ -4,12 +4,14 @@ CFLAGS = -Wall -Wextra
 LDFLAGS = -lwiringPi 
 
 # 源文件
-SRCS = main.c components/botton.c components/clock.c components/beep.c components/rgb.c
+SRCS = main.c \
+       components/botton.c components/clock.c components/beep.c components/rgb.c \
+       combo/alarm_clock.c combo/stopwatch.c combo/rgb_control.c
 OBJS = $(addprefix target/,$(notdir $(SRCS:.c=.o)))
 TARGET = main_app
 
 # 包含目录
-INCLUDES = -Icomponents
+INCLUDES = -Icomponents -Icombo
 
 # 默认目标
 all: target_dir $(TARGET)
@@ -22,6 +24,9 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
 
 target/%.o: components/%.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+target/%.o: combo/%.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 target/main.o: main.c

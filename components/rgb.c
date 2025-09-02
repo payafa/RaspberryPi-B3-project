@@ -1,5 +1,42 @@
 #include "rgb.h"
 
+// 静态变量
+static volatile int rgb_signal_received = 0;
+
+// 信号处理函数
+void rgb_signal_handler(int signal)
+{
+    rgb_signal_received = signal;
+    printf("\nRGB组件接收到信号 %d\n", signal);
+    
+    switch (signal)
+    {
+        case SIGINT:  // Ctrl+C - 关闭RGB灯
+            printf("RGB组件: 接收到退出信号，关闭所有LED...\n");
+            rgb_cleanup();
+            exit(0);
+            break;
+        default:
+            printf("RGB组件: 未处理的信号 %d\n", signal);
+            break;
+    }
+}
+
+// 设置信号处理器
+void rgb_setup_signal_handlers(void)
+{
+    signal(SIGINT, rgb_signal_handler);
+    printf("RGB信号处理器设置完成 (仅SIGINT)\n");
+}
+
+// 清理函数
+void rgb_cleanup(void)
+{
+    printf("RGB组件清理中...\n");
+    set_rgb(0, 0, 0); // 关闭所有LED
+    printf("RGB组件清理完成\n");
+}
+
 void rgb_init(void)
 {
     if (wiringPiSetupGpio() < 0)
@@ -17,6 +54,8 @@ void rgb_init(void)
     digitalWrite(R, 0);
     digitalWrite(G, 0);
     digitalWrite(B, 0);
+
+    printf("RGB组件初始化完成 (引脚 R:%d G:%d B:%d)\n\n", R, G, B);
 }
 
 void set_rgb(int red, int green, int blue)

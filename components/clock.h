@@ -29,4 +29,10 @@ void data_display(char *data);
 void text_display(char *text);
 void roll_display(char *data, int len);
 void clock_display();
+
+// 信号处理函数声明
+void clock_signal_handler(int signal);
+void clock_setup_signal_handlers(void);
+void clock_cleanup(void);
+
 #endif // CLOCK_H

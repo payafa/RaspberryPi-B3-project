@@ -1,5 +1,43 @@
 #include "clock.h"
 
+// 静态变量
+static volatile int clock_signal_received = 0;
+
+// 信号处理函数
+void clock_signal_handler(int signal)
+{
+    clock_signal_received = signal;
+    printf("\n时钟组件接收到信号 %d\n", signal);
+
+    switch (signal)
+    {
+    case SIGINT: // Ctrl+C - 清理时钟显示
+        printf("时钟组件: 接收到退出信号，清理时钟显示...\n");
+        clock_cleanup();
+        exit(0);
+        break;
+    default:
+        printf("时钟组件: 未处理的信号 %d\n", signal);
+        break;
+    }
+}
+
+// 设置信号处理器
+void clock_setup_signal_handlers(void)
+{
+    signal(SIGINT, clock_signal_handler);
+    printf("时钟信号处理器设置完成 (仅SIGINT)\n");
+}
+
+// 清理函数
+void clock_cleanup(void)
+{
+    printf("时钟组件清理中...\n");
+    // 清空显示
+    data_display("    "); // 显示空白
+    printf("时钟组件清理完成\n");
+}
+
 char segdata[] = {
     0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, // 0~9
     0x40,                                                       // '-' (10)
@@ -224,6 +262,8 @@ void tm1637_init()
     }
     pinMode(CLK, OUTPUT);
     pinMode(DIO, OUTPUT);
+
+    printf("时钟组件初始化完成 (引脚 CLK:%d DIO:%d)\n", CLK, DIO);
 }
 
 void clock_display()
