@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
-#include "beep.h"  // 包含蜂鸣器头文件
+#include "beep.h"
 
 // 按键引脚定义
 #define KEY_PIN 4

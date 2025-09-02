@@ -4,7 +4,8 @@
 static int beep_current_state = 0;
 
 // 初始化蜂鸣器
-void beep_init(void) {
+void beep_init(void)
+{
     pinMode(BEEP_PIN, OUTPUT);
     digitalWrite(BEEP_PIN, 0);
     beep_current_state = 0;
@@ -12,37 +13,44 @@ void beep_init(void) {
 }
 
 // 打开蜂鸣器
-void beep_on(void) {
+void beep_on(void)
+{
     digitalWrite(BEEP_PIN, 1);
     beep_current_state = 1;
     printf("蜂鸣器: 开启\n");
 }
 
 // 关闭蜂鸣器
-void beep_off(void) {
+void beep_off(void)
+{
     digitalWrite(BEEP_PIN, 0);
     beep_current_state = 0;
     printf("蜂鸣器: 关闭\n");
 }
 
 // 切换蜂鸣器状态
-void beep_toggle(void) {
+void beep_toggle(void)
+{
     beep_current_state = !beep_current_state;
     digitalWrite(BEEP_PIN, beep_current_state);
     printf("蜂鸣器: %s\n", beep_current_state ? "开启" : "关闭");
 }
 
 // 设置蜂鸣器状态
-void beep_set_state(int state) {
-    if (state) {
+void beep_set_state(int state)
+{
+    if (state)
+    {
         beep_on();
-    } else {
+    }
+    else
+    {
         beep_off();
     }
 }
 
 // 获取蜂鸣器当前状态
-int beep_get_state(void) {
+int beep_get_state(void)
+{
     return beep_current_state;
 }
-

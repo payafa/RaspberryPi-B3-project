@@ -29,10 +29,10 @@ target/main.o: main.c
 
 # 清理
 clean:
-	rm -f $(TARGET) target/*.o
+	rm -f $(TARGET) $(TEST_TARGET) target/*.o
 	rmdir target 2>/dev/null || true
 
 # 重新编译
 rebuild: clean all
 
-.PHONY: all clean rebuild target_dir
+.PHONY: all test clean rebuild target_dir
