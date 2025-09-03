@@ -101,11 +101,18 @@ void stopwatch_button_control_mode(void) {
     while (1) {
         if (running) {
             total_seconds = time(NULL) - start_time;
+            // 确保时间值不为负数
+            if (total_seconds < 0) total_seconds = 0;
+            
             char time_str[10]; // 增加缓冲区大小以防止溢出
             int minutes = total_seconds / 60;
             int seconds = total_seconds % 60;
+            
             // 限制显示范围，防止溢出
             if (minutes > 99) minutes = 99;
+            if (seconds < 0) seconds = 0;
+            if (seconds > 59) seconds = 59;
+            
             sprintf(time_str, "%02d%02d", minutes, seconds);
             text_display(time_str);
         }
