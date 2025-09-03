@@ -8,9 +8,11 @@
 #include "components/botton.h"
 #include "components/clock.h"
 #include "components/rgb.h"
+#include "components/DHT.h"
 #include "combo/alarm_clock.h"
 #include "combo/stopwatch.h"
 #include "combo/rgb_control.h"
+#include "combo/temp_display.h"
 
 // 函数声明
 void show_main_menu(void);
@@ -20,6 +22,8 @@ void test_beep(void);
 void test_button(void);
 void test_clock(void);
 void test_rgb(void);
+void test_dht_sensor(void);
+void test_temp_display(void);
 void clear_screen(void);
 void wait_for_input(void);
 
@@ -101,11 +105,12 @@ void show_single_component_menu(void) {
         printf("║  2. 按键测试                         ║\n");
         printf("║  3. 时钟显示测试                     ║\n");
         printf("║  4. RGB LED测试                      ║\n");
-        printf("║  5. 返回主菜单                       ║\n");
+        printf("║  5. DHT11温湿度传感器测试            ║\n");
+        printf("║  6. 返回主菜单                       ║\n");
         printf("╚══════════════════════════════════════╝\n");
         printf("\n");
         
-        printf("请选择测试项目 (1-5): ");
+        printf("请选择测试项目 (1-6): ");
         scanf("%d", &choice);
         
         switch (choice) {
@@ -122,6 +127,9 @@ void show_single_component_menu(void) {
                 test_rgb();
                 break;
             case 5:
+                test_dht_sensor();
+                break;
+            case 6:
                 return; // 返回主菜单
             default:
                 printf("无效选择，请重新输入！\n");
@@ -163,7 +171,7 @@ void show_combo_component_menu(void) {
                 rgb_button_control();
                 break;
             case 4:
-                temperature_display_function();
+                test_temp_display();
                 break;
             case 5:
                 system_status_indicator();
@@ -349,4 +357,184 @@ void wait_for_input(void) {
     printf("按回车键继续...");
     getchar(); // 清除输入缓冲
     getchar(); // 等待用户输入
+}
+
+// DHT11温湿度传感器测试
+void test_dht_sensor(void) {
+    int choice;
+    DHT11_Data sensor_data;
+    unsigned char result;
+    
+    clear_screen();
+    printf("\n=== DHT11温湿度传感器测试 ===\n");
+    printf("1. 读取温湿度数据\n");
+    printf("2. 连续监测模式\n");
+    printf("3. 返回\n");
+    printf("请选择 (1-3): ");
+    scanf("%d", &choice);
+    
+    switch (choice) {
+        case 1:
+            printf("\n正在读取传感器数据...\n");
+            result = dht11_read_with_retry(&sensor_data, 3);
+            
+            if (result == DHT_SUCCESS) {
+                printf("读取成功！\n");
+                printf("温度: %.1f°C\n", sensor_data.temperature);
+                printf("湿度: %.1f%%\n", sensor_data.humidity);
+            } else {
+                printf("读取失败！错误代码: %d\n", result);
+                switch (result) {
+                    case DHT_CHECKSUM_ERROR:
+                        printf("错误原因: 数据校验失败\n");
+                        break;
+                    case DHT_NO_RESPONSE:
+                        printf("错误原因: 传感器无响应\n");
+                        break;
+                    case DHT_TIMEOUT_ERROR:
+                        printf("错误原因: 读取超时\n");
+                        break;
+                }
+            }
+            wait_for_input();
+            break;
+            
+        case 2:
+            printf("\n进入连续监测模式 (按Ctrl+C退出)...\n");
+            printf("每2秒读取一次数据\n\n");
+            
+            int count = 0;
+            int success = 0;
+            
+            while (count < 10) { // 读取10次后自动退出
+                result = dht11_read_with_retry(&sensor_data, 3);
+                count++;
+                
+                if (result == DHT_SUCCESS) {
+                    success++;
+                    printf("[%02d] 温度: %.1f°C, 湿度: %.1f%% (成功率: %.1f%%)\n", 
+                           count, sensor_data.temperature, sensor_data.humidity,
+                           (float)success/count*100);
+                } else {
+                    printf("[%02d] 读取失败 (错误代码: %d, 成功率: %.1f%%)\n", 
+                           count, result, (float)success/count*100);
+                }
+                
+                if (count < 10) sleep(2);
+            }
+            
+            printf("\n监测完成！总成功率: %.1f%%\n", (float)success/count*100);
+            wait_for_input();
+            break;
+            
+        case 3:
+            return;
+            
+        default:
+            printf("无效选择！\n");
+            wait_for_input();
+            break;
+    }
+}
+
+// 温度显示功能（数码管显示）
+void test_temp_display(void) {
+    int choice;
+    TempDisplayConfig config;
+    
+    clear_screen();
+    printf("\n=== 温度显示功能 ===\n");
+    printf("1. 显示摄氏温度\n");
+    printf("2. 显示华氏温度\n");
+    printf("3. 显示湿度\n");
+    printf("4. 自定义显示模式\n");
+    printf("5. 返回\n");
+    printf("请选择 (1-5): ");
+    scanf("%d", &choice);
+    
+    // 设置默认配置
+    config.update_interval = 2;
+    config.max_retry = 3;
+    config.show_decimal = 1;
+    
+    switch (choice) {
+        case 1:
+            config.mode = TEMP_MODE_CELSIUS;
+            printf("\n启动摄氏温度显示模式...\n");
+            printf("温度将显示在数码管上，按Ctrl+C退出\n");
+            
+            if (temp_display_init() == 0) {
+                temp_display_start(&config);
+                temp_display_cleanup();
+            }
+            break;
+            
+        case 2:
+            config.mode = TEMP_MODE_FAHRENHEIT;
+            printf("\n启动华氏温度显示模式...\n");
+            printf("温度将显示在数码管上，按Ctrl+C退出\n");
+            
+            if (temp_display_init() == 0) {
+                temp_display_start(&config);
+                temp_display_cleanup();
+            }
+            break;
+            
+        case 3:
+            config.mode = TEMP_MODE_HUMIDITY;
+            printf("\n启动湿度显示模式...\n");
+            printf("湿度将显示在数码管上，按Ctrl+C退出\n");
+            
+            if (temp_display_init() == 0) {
+                temp_display_start(&config);
+                temp_display_cleanup();
+            }
+            break;
+            
+        case 4:
+            printf("\n=== 自定义显示模式 ===\n");
+            printf("选择显示内容:\n");
+            printf("1. 摄氏温度  2. 华氏温度  3. 湿度\n");
+            printf("请选择 (1-3): ");
+            
+            int mode_choice;
+            scanf("%d", &mode_choice);
+            
+            switch (mode_choice) {
+                case 1: config.mode = TEMP_MODE_CELSIUS; break;
+                case 2: config.mode = TEMP_MODE_FAHRENHEIT; break;
+                case 3: config.mode = TEMP_MODE_HUMIDITY; break;
+                default: 
+                    printf("无效选择，使用默认摄氏温度模式\n");
+                    config.mode = TEMP_MODE_CELSIUS;
+                    break;
+            }
+            
+            printf("设置更新间隔 (秒, 1-10): ");
+            scanf("%d", &config.update_interval);
+            if (config.update_interval < 1 || config.update_interval > 10) {
+                config.update_interval = 2;
+                printf("无效间隔，使用默认2秒\n");
+            }
+            
+            printf("是否显示小数点? (1=是, 0=否): ");
+            scanf("%d", &config.show_decimal);
+            
+            printf("\n启动自定义显示模式...\n");
+            printf("显示内容将出现在数码管上，按Ctrl+C退出\n");
+            
+            if (temp_display_init() == 0) {
+                temp_display_start(&config);
+                temp_display_cleanup();
+            }
+            break;
+            
+        case 5:
+            return;
+            
+        default:
+            printf("无效选择！\n");
+            wait_for_input();
+            break;
+    }
 }

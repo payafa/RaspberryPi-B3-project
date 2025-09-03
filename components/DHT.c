@@ -83,7 +83,7 @@ char read_byte()
 
 unsigned char dht11_read_data(char *buff)
 {
-    char i = 0;
+    int i = 0;  // 改为int类型
     int timeout = 0;
     
     dht11_reset();
