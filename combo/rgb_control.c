@@ -1,5 +1,48 @@
 #include "rgb_control.h"
 
+// 静态变量
+static volatile int rgb_control_running = 1;
+
+// 信号处理函数
+void rgb_control_signal_handler(int signal)
+{
+    printf("\nRGB控制组件接收到信号 %d\n", signal);
+    
+    switch (signal)
+    {
+        case SIGINT:  // Ctrl+C - 设置停止标志
+            printf("RGB控制组件: 接收到退出信号，准备返回主菜单...\n");
+            rgb_control_running = 0;
+            break;
+        default:
+            printf("RGB控制组件: 未处理的信号 %d\n", signal);
+            break;
+    }
+}
+
+// 设置信号处理器
+void rgb_control_setup_signal_handlers(void)
+{
+    signal(SIGINT, rgb_control_signal_handler);
+    printf("RGB控制信号处理器设置完成 (仅SIGINT)\n");
+}
+
+// 获取运行状态
+int rgb_control_is_running(void)
+{
+    return rgb_control_running;
+}
+
+// 清理函数
+void rgb_control_cleanup(void)
+{
+    printf("RGB控制组件清理中...\n");
+    set_rgb(0, 0, 0); // 关闭RGB灯
+    beep_off(); // 关闭蜂鸣器
+    rgb_control_running = 1; // 重置运行状态以便下次使用
+    printf("RGB控制组件清理完成\n");
+}
+
 void rgb_button_control(void) {
     int color_index = 0;
     int colors[8][3] = {
@@ -24,10 +67,14 @@ void rgb_button_control(void) {
     printf("颜色循环：关闭→红→绿→蓝→黄→紫→青→白→关闭...\n");
     printf("按Ctrl+C退出\n\n");
     
+    // 设置信号处理
+    rgb_control_setup_signal_handlers();
+    rgb_control_running = 1; // 重置运行标志
+    
     // 设置初始颜色
     set_rgb(colors[color_index][0], colors[color_index][1], colors[color_index][2]);
     
-    while (1) {
+    while (rgb_control_running) {
         if (botton_is_pressed()) {
             // 防抖延时
             usleep(50000);
@@ -55,6 +102,9 @@ void rgb_button_control(void) {
         
         usleep(50000); // 50ms延时
     }
+    
+    // 退出时清理
+    rgb_control_cleanup();
 }
 
 void temperature_display_function(void) {

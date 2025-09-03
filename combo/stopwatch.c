@@ -1,5 +1,48 @@
 #include "stopwatch.h"
 
+// 静态变量
+static volatile int stopwatch_running = 1;
+
+// 信号处理函数
+void stopwatch_signal_handler(int signal)
+{
+    printf("\n秒表组件接收到信号 %d\n", signal);
+    
+    switch (signal)
+    {
+        case SIGINT:  // Ctrl+C - 设置停止标志
+            printf("秒表组件: 接收到退出信号，准备返回主菜单...\n");
+            stopwatch_running = 0;
+            break;
+        default:
+            printf("秒表组件: 未处理的信号 %d\n", signal);
+            break;
+    }
+}
+
+// 设置信号处理器
+void stopwatch_setup_signal_handlers(void)
+{
+    signal(SIGINT, stopwatch_signal_handler);
+    printf("秒表信号处理器设置完成 (仅SIGINT)\n");
+}
+
+// 获取运行状态
+int stopwatch_is_running(void)
+{
+    return stopwatch_running;
+}
+
+// 清理函数
+void stopwatch_cleanup(void)
+{
+    printf("秒表组件清理中...\n");
+    set_rgb(0, 0, 0); // 关闭RGB灯
+    data_display("    "); // 清空显示
+    stopwatch_running = 1; // 重置运行状态以便下次使用
+    printf("秒表组件清理完成\n");
+}
+
 void stopwatch_function(void) {
     int choice;
     int running = 0;
@@ -98,7 +141,11 @@ void stopwatch_button_control_mode(void) {
     printf("按钮控制模式：短按开始/暂停，长按重置\n");
     printf("按Ctrl+C退出此模式\n");
     
-    while (1) {
+    // 设置信号处理
+    stopwatch_setup_signal_handlers();
+    stopwatch_running = 1; // 重置运行标志
+    
+    while (stopwatch_running) {
         if (running) {
             total_seconds = time(NULL) - start_time;
             // 确保时间值不为负数
@@ -144,4 +191,7 @@ void stopwatch_button_control_mode(void) {
         
         usleep(100000); // 0.1秒延时
     }
+    
+    // 退出时清理
+    stopwatch_cleanup();
 }

@@ -2,6 +2,7 @@
 
 // 静态变量
 static volatile int rgb_signal_received = 0;
+static volatile int rgb_running = 1;
 
 // 信号处理函数
 void rgb_signal_handler(int signal)
@@ -11,10 +12,9 @@ void rgb_signal_handler(int signal)
     
     switch (signal)
     {
-        case SIGINT:  // Ctrl+C - 关闭RGB灯
-            printf("RGB组件: 接收到退出信号，关闭所有LED...\n");
-            rgb_cleanup();
-            exit(0);
+        case SIGINT:  // Ctrl+C - 设置停止标志
+            printf("RGB组件: 接收到退出信号，准备返回主菜单...\n");
+            rgb_running = 0;
             break;
         default:
             printf("RGB组件: 未处理的信号 %d\n", signal);
@@ -34,7 +34,14 @@ void rgb_cleanup(void)
 {
     printf("RGB组件清理中...\n");
     set_rgb(0, 0, 0); // 关闭所有LED
+    rgb_running = 1; // 重置运行状态以便下次使用
     printf("RGB组件清理完成\n");
+}
+
+// 获取运行状态
+int rgb_is_running(void)
+{
+    return rgb_running;
 }
 
 void rgb_init(void)
@@ -67,34 +74,44 @@ void set_rgb(int red, int green, int blue)
 
 void rgb_sequence(void)
 {
-    while (1)
+    rgb_running = 1; // 重置运行标志
+    while (rgb_running)
     {
         // 红色亮1秒
         set_rgb(1, 0, 0);
         sleep(1);
+        if (!rgb_running) break;
 
         // 绿色亮1秒（同时红色保持亮）
         set_rgb(1, 1, 0);
         sleep(1);
+        if (!rgb_running) break;
 
         // 绿色关闭，蓝色亮1秒（红色保持亮）
         set_rgb(1, 0, 1);
         sleep(1);
+        if (!rgb_running) break;
 
         // 红色关闭，蓝色关闭，绿色亮1秒
         set_rgb(0, 1, 0);
         sleep(1);
+        if (!rgb_running) break;
 
         // 蓝色亮1秒（绿色保持亮）
         set_rgb(0, 1, 1);
         sleep(1);
+        if (!rgb_running) break;
 
         // 绿色关闭1秒
         set_rgb(0, 0, 1);
         sleep(1);
+        if (!rgb_running) break;
 
         // 绿色亮，红色亮1秒（蓝色保持亮）
         set_rgb(1, 1, 1);
         sleep(1);
     }
+    
+    // 退出时清理
+    rgb_cleanup();
 }

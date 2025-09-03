@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include <wiringPi.h>
 #include "../components/beep.h"
 #include "../components/botton.h"
@@ -21,5 +22,11 @@ void status_warning_mode(void);
 void status_error_mode(void);
 void status_standby_mode(void);
 void status_rainbow_mode(void);
+
+// 信号处理函数声明
+void rgb_control_signal_handler(int signal);
+void rgb_control_setup_signal_handlers(void);
+int rgb_control_is_running(void);
+void rgb_control_cleanup(void);
 
 #endif // RGB_CONTROL_H

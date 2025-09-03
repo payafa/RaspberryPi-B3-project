@@ -21,5 +21,6 @@ void set_rgb(int red, int green, int blue);
 void rgb_signal_handler(int signal);
 void rgb_setup_signal_handlers(void);
 void rgb_cleanup(void);
+int rgb_is_running(void);
 
 #endif // RGB_H

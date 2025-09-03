@@ -2,6 +2,7 @@
 
 // 静态变量
 static volatile int clock_signal_received = 0;
+static volatile int clock_running = 1;
 
 // 信号处理函数
 void clock_signal_handler(int signal)
@@ -11,10 +12,9 @@ void clock_signal_handler(int signal)
 
     switch (signal)
     {
-    case SIGINT: // Ctrl+C - 清理时钟显示
-        printf("时钟组件: 接收到退出信号，清理时钟显示...\n");
-        clock_cleanup();
-        exit(0);
+    case SIGINT: // Ctrl+C - 设置停止标志
+        printf("时钟组件: 接收到退出信号，准备返回主菜单...\n");
+        clock_running = 0;
         break;
     default:
         printf("时钟组件: 未处理的信号 %d\n", signal);
@@ -35,7 +35,14 @@ void clock_cleanup(void)
     printf("时钟组件清理中...\n");
     // 清空显示
     data_display("    "); // 显示空白
+    clock_running = 1; // 重置运行状态以便下次使用
     printf("时钟组件清理完成\n");
+}
+
+// 获取运行状态
+int clock_is_running(void)
+{
+    return clock_running;
 }
 
 char segdata[] = {
@@ -242,7 +249,8 @@ void roll_display(char *input_data, int len)
 
     // 滚动显示
     int i = 0;
-    while (1)
+    clock_running = 1; // 重置运行标志
+    while (clock_running)
     {
         data_display(temp + i);
 
@@ -250,6 +258,8 @@ void roll_display(char *input_data, int len)
         sleep(1);
     }
 
+    // 退出时清理显示
+    clock_cleanup();
     free(temp);
 }
 
@@ -268,7 +278,8 @@ void tm1637_init()
 
 void clock_display()
 {
-    while (1)
+    clock_running = 1; // 重置运行标志
+    while (clock_running)
     {
         time_t rawtime;
         struct tm *timeinfo;
@@ -284,6 +295,9 @@ void clock_display()
         int m_ge = timeinfo->tm_min % 10;
 
         num_display(h_shi, h_ge, m_shi, m_ge);
-        sleep(30);
+        sleep(1); // 改为1秒更新一次，更容易响应信号
     }
+    
+    // 退出时清理显示
+    clock_cleanup();
 }

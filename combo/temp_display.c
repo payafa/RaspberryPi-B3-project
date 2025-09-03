@@ -174,7 +174,7 @@ int temp_display_start(TempDisplayConfig *config)
                     break;
             }
             
-            data_display(display_buffer);
+            num_display(display_buffer);
         } else {
             // 显示错误
             temp_display_show_error(result);

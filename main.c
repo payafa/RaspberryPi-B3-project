@@ -213,15 +213,13 @@ void test_beep(void) {
             wait_for_input();
             break;
         case 3:
-            printf("蜂鸣器切换测试 (按回车停止)...\n");
-            getchar(); // 清除输入缓冲
-            for (int i = 0; i < 5; i++) {
+            printf("蜂鸣器切换测试 (按Ctrl+C返回菜单)...\n");
+            beep_setup_signal_handlers();
+            while (beep_is_running()) {
                 beep_toggle();
                 usleep(500000); // 0.5秒
             }
-            beep_off();
-            printf("测试完成\n");
-            wait_for_input();
+            beep_cleanup();
             break;
         case 4:
             return;
@@ -235,13 +233,13 @@ void test_beep(void) {
 void test_button(void) {
     clear_screen();
     printf("\n=== 按键测试 ===\n");
-    printf("请按下按键进行测试 (按住Ctrl+C退出测试)\n");
+    printf("请按下按键进行测试 (按Ctrl+C返回菜单)\n");
     printf("按键状态监测中...\n\n");
     
     // 设置信号处理
     beep_setup_signal_handlers();
     
-    while (1) {
+    while (beep_is_running()) {
         if (botton_is_pressed()) {
             printf("按键被按下！\n");
             beep_on(); // 按键按下时蜂鸣器响
@@ -254,6 +252,9 @@ void test_button(void) {
         
         usleep(50000); // 50ms延时
     }
+    
+    // 退出时清理
+    beep_cleanup();
 }
 
 void test_clock(void) {
@@ -271,10 +272,9 @@ void test_clock(void) {
     
     switch (choice) {
         case 1:
-            printf("显示当前时间 (按回车停止)...\n");
+            printf("显示当前时间 (按Ctrl+C返回菜单)...\n");
             clock_setup_signal_handlers();
-            getchar(); // 清除输入缓冲
-            clock_display(); // 这个函数应该包含循环显示时间
+            clock_display(); // 函数会在接收到信号时自动返回
             break;
         case 2:
             printf("请输入要显示的文本 (最多4个字符): ");
@@ -289,8 +289,9 @@ void test_clock(void) {
             getchar(); // 清除输入缓冲
             fgets(text, sizeof(text), stdin);
             text[strlen(text)-1] = '\0'; // 移除换行符
-            printf("滚动显示文本: %s (按回车停止)...\n", text);
-            roll_display(text, strlen(text));
+            printf("滚动显示文本: %s (按Ctrl+C返回菜单)...\n", text);
+            clock_setup_signal_handlers();
+            roll_display(text, strlen(text)); // 函数会在接收到信号时自动返回
             break;
         case 4:
             return;
@@ -316,10 +317,9 @@ void test_rgb(void) {
     
     switch (choice) {
         case 1:
-            printf("RGB序列演示 (按回车停止)...\n");
+            printf("RGB序列演示 (按Ctrl+C返回菜单)...\n");
             rgb_setup_signal_handlers();
-            getchar(); // 清除输入缓冲
-            rgb_sequence(); // 这个函数应该包含序列演示
+            rgb_sequence(); // 函数会在接收到信号时自动返回
             break;
         case 2:
             printf("请输入RGB值 (0-1):\n");

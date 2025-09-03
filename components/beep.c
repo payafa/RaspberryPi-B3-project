@@ -3,6 +3,7 @@
 // 静态变量，只在当前文件可见
 static int beep_current_state = 0;
 static volatile int signal_received = 0;
+static volatile int beep_running = 1;
 
 // 信号处理函数
 void beep_signal_handler(int signal)
@@ -12,10 +13,9 @@ void beep_signal_handler(int signal)
     
     switch (signal)
     {
-        case SIGINT:  // Ctrl+C - 关闭蜂鸣器并退出
-            printf("蜂鸣器组件: 接收到退出信号，关闭蜂鸣器...\n");
-            beep_off();
-            exit(0);
+        case SIGINT:  // Ctrl+C - 设置停止标志
+            printf("蜂鸣器组件: 接收到退出信号，准备返回主菜单...\n");
+            beep_running = 0;
             break;
         default:
             printf("蜂鸣器组件: 未处理的信号 %d\n", signal);
@@ -80,4 +80,19 @@ void beep_set_state(int state)
 int beep_get_state(void)
 {
     return beep_current_state;
+}
+
+// 获取运行状态
+int beep_is_running(void)
+{
+    return beep_running;
+}
+
+// 清理函数
+void beep_cleanup(void)
+{
+    printf("蜂鸣器组件清理中...\n");
+    beep_off();
+    beep_running = 1; // 重置运行状态以便下次使用
+    printf("蜂鸣器组件清理完成\n");
 }

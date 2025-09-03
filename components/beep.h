@@ -20,5 +20,7 @@ int beep_get_state(void);
 // 信号处理函数声明
 void beep_signal_handler(int signal);
 void beep_setup_signal_handlers(void);
+int beep_is_running(void);
+void beep_cleanup(void);
 
 #endif

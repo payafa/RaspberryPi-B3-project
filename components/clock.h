@@ -34,5 +34,6 @@ void clock_display();
 void clock_signal_handler(int signal);
 void clock_setup_signal_handlers(void);
 void clock_cleanup(void);
+int clock_is_running(void);
 
 #endif // CLOCK_H
