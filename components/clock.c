@@ -304,9 +304,3 @@ void clock_display()
     // 退出时清理显示
     clock_cleanup();
 }
-
-// 获取运行状态
-int clock_is_running(void)
-{
-    return clock_running;
-}
