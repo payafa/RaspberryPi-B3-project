@@ -7,6 +7,7 @@
 #include <wiringPi.h>
 #include "../components/beep.h"
 #include "../components/botton.h"
+#include "../components/clock.h"
 #include "../components/rgb.h"
 
 // RGB控制功能函数声明
