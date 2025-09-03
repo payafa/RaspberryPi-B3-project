@@ -36,7 +36,7 @@ void clock_cleanup(void)
     // 清空显示
     char blank[4] = {0x00, 0x00, 0x00, 0x00}; // 全部清空
     data_display(blank);
-    clock_running = 1; // 重置运行状态以便下次使用
+    clock_running = 0; // 重置运行状态以便下次使用
     printf("时钟组件清理完成\n");
 }
 
