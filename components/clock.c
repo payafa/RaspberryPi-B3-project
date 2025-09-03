@@ -34,7 +34,8 @@ void clock_cleanup(void)
 {
     printf("时钟组件清理中...\n");
     // 清空显示
-    data_display("    "); // 显示空白
+    char blank[4] = {0x00, 0x00, 0x00, 0x00}; // 全部清空
+    data_display(blank);
     clock_running = 1; // 重置运行状态以便下次使用
     printf("时钟组件清理完成\n");
 }
@@ -112,6 +113,7 @@ void write_bit(char bit)
         digitalWrite(DIO, 0);
     usleep(140);
     digitalWrite(CLK, 1);
+    usleep(140);
 }
 
 void write_byte(char data)
@@ -294,10 +296,17 @@ void clock_display()
         int m_shi = timeinfo->tm_min / 10;
         int m_ge = timeinfo->tm_min % 10;
 
+        printf("显示时间: %02d:%02d\n", timeinfo->tm_hour, timeinfo->tm_min);
         num_display(h_shi, h_ge, m_shi, m_ge);
         sleep(1); // 改为1秒更新一次，更容易响应信号
     }
     
     // 退出时清理显示
     clock_cleanup();
+}
+
+// 获取运行状态
+int clock_is_running(void)
+{
+    return clock_running;
 }
