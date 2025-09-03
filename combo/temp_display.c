@@ -86,7 +86,7 @@ void temp_display_show_error(unsigned char error_code)
             break;
     }
     
-    data_display(error_msg);
+    text_display(error_msg);
 }
 
 // 设置显示模式
@@ -174,7 +174,7 @@ int temp_display_start(TempDisplayConfig *config)
                     break;
             }
             
-            num_display(display_buffer);
+            text_display(display_buffer);
         } else {
             // 显示错误
             temp_display_show_error(result);
@@ -201,6 +201,6 @@ void temp_display_stop(void)
 void temp_display_cleanup(void)
 {
     // 清空数码管显示
-    data_display("    ");
+    text_display("    ");
     printf("温度显示系统已关闭\n");
 }
