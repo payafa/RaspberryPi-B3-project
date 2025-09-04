@@ -9,6 +9,7 @@
 #include "components/clock.h"
 #include "components/rgb.h"
 #include "components/DHT.h"
+#include "components/usonic.h"
 #include "combo/alarm_clock.h"
 #include "combo/stopwatch.h"
 #include "combo/rgb_control.h"
@@ -23,6 +24,7 @@ void test_button(void);
 void test_clock(void);
 void test_rgb(void);
 void test_dht_sensor(void);
+void test_usonic_sensor(void);
 void test_temp_display(void);
 void clear_screen(void);
 void wait_for_input(void);
@@ -44,6 +46,7 @@ int main(void) {
     botton_init();
     tm1637_init();
     rgb_init();
+    usonic_init();
     
     printf("系统初始化完成!\n");
     sleep(1);
@@ -106,11 +109,12 @@ void show_single_component_menu(void) {
         printf("║  3. 时钟显示测试                     ║\n");
         printf("║  4. RGB LED测试                      ║\n");
         printf("║  5. DHT11温湿度传感器测试            ║\n");
-        printf("║  6. 返回主菜单                       ║\n");
+        printf("║  6. 超声波距离传感器测试             ║\n");
+        printf("║  7. 返回主菜单                       ║\n");
         printf("╚══════════════════════════════════════╝\n");
         printf("\n");
         
-        printf("请选择测试项目 (1-6): ");
+        printf("请选择测试项目 (1-7): ");
         scanf("%d", &choice);
         
         switch (choice) {
@@ -130,6 +134,9 @@ void show_single_component_menu(void) {
                 test_dht_sensor();
                 break;
             case 6:
+                test_usonic_sensor();
+                break;
+            case 7:
                 return; // 返回主菜单
             default:
                 printf("无效选择，请重新输入！\n");
@@ -434,6 +441,56 @@ void test_dht_sensor(void) {
             printf("无效选择！\n");
             wait_for_input();
             break;
+    }
+}
+
+void test_usonic_sensor(void) {
+    int choice;
+    int distance;
+    
+    while (1) {
+        clear_screen();
+        printf("\n=== 超声波距离传感器测试 ===\n");
+        printf("1. 测量距离 (单次)\n");
+        printf("2. 连续测量距离\n");
+        printf("3. 返回\n");
+        printf("请选择 (1-3): ");
+        scanf("%d", &choice);
+        
+        switch (choice) {
+            case 1:
+                printf("\n正在测量距离...\n");
+                distance = read_dist();
+                if (distance > 0) {
+                    printf("测量距离: %d cm\n", distance);
+                } else {
+                    printf("测量失败，请检查传感器连接\n");
+                }
+                wait_for_input();
+                break;
+                
+            case 2:
+                printf("\n连续测量模式 (按Ctrl+C停止)\n");
+                printf("每2秒测量一次距离...\n");
+                while (1) {
+                    distance = read_dist();
+                    if (distance > 0) {
+                        printf("距离: %d cm\n", distance);
+                    } else {
+                        printf("测量失败\n");
+                    }
+                    sleep(2);
+                }
+                break;
+
+            case 3:
+                return;
+                
+            default:
+                printf("无效选择，请重新输入！\n");
+                wait_for_input();
+                break;
+        }
     }
 }
 
