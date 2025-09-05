@@ -152,6 +152,12 @@ int parse_http_request(const char *request_data, http_request_t *request) {
     
     memset(request, 0, sizeof(http_request_t));
     
+    // 找到头部和身体的分界线（空行）
+    char *body_start = strstr(request_data, "\r\n\r\n");
+    if (body_start) {
+        body_start += 4; // 跳过 \r\n\r\n
+    }
+    
     line = strtok_r(request_copy, "\r\n", &saveptr);
     while (line != NULL) {
         if (first_line) {
@@ -176,6 +182,16 @@ int parse_http_request(const char *request_data, http_request_t *request) {
             request->content_length = atoi(line + 16);
         }
         line = strtok_r(NULL, "\r\n", &saveptr);
+    }
+    
+    // 提取请求体
+    if (body_start && request->content_length > 0) {
+        int body_len = strlen(body_start);
+        if (body_len > 0 && body_len < sizeof(request->body)) {
+            strncpy(request->body, body_start, body_len);
+            request->body[body_len] = '\0';
+            printf("解析到请求体: %s\n", request->body);
+        }
     }
     
     free(request_copy);
