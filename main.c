@@ -752,15 +752,18 @@ void test_motion_control(void) {
                 motion_state_t state = get_motion_state();
                 printf("\n--- 运动状态信息 ---\n");
                 printf("当前方向: ");
-                switch (state.direction) {
+                switch (state.current_motion) {
                     case MOTION_FORWARD:  printf("前进\n"); break;
                     case MOTION_BACKWARD: printf("后退\n"); break;
                     case MOTION_LEFT:     printf("左转\n"); break;
                     case MOTION_RIGHT:    printf("右转\n"); break;
                     case MOTION_STOP:     printf("停止\n"); break;
+                    case MOTION_ACCELERATE: printf("加速\n"); break;
+                    case MOTION_DECELERATE: printf("减速\n"); break;
                     default:              printf("未知\n"); break;
                 }
-                printf("当前速度: %d%%\n", state.speed);
+                printf("左轮速度: %d%%\n", state.left_speed);
+                printf("右轮速度: %d%%\n", state.right_speed);
                 printf("运动状态: %s\n", state.is_moving ? "运动中" : "静止");
                 printf("-------------------\n");
                 wait_for_input();
