@@ -702,35 +702,35 @@ void test_motion_control(void) {
         switch (choice) {
             case 1:
                 printf("执行前进运动 (速度: %d%%)...\n", speed);
-                move_forward(speed);
+                control_move_forward(speed);
                 printf("前进命令已发送\n");
                 sleep(1);
                 break;
                 
             case 2:
                 printf("执行后退运动 (速度: %d%%)...\n", speed);
-                move_backward(speed);
+                control_move_backward(speed);
                 printf("后退命令已发送\n");
                 sleep(1);
                 break;
                 
             case 3:
                 printf("执行左转运动 (速度: %d%%)...\n", speed);
-                turn_left(speed);
+                control_turn_left(speed, 1000); // 左转1秒
                 printf("左转命令已发送\n");
                 sleep(1);
                 break;
                 
             case 4:
                 printf("执行右转运动 (速度: %d%%)...\n", speed);
-                turn_right(speed);
+                control_turn_right(speed, 1000); // 右转1秒
                 printf("右转命令已发送\n");
                 sleep(1);
                 break;
                 
             case 5:
                 printf("停止所有运动...\n");
-                stop_motion();
+                control_stop();
                 printf("停止命令已发送\n");
                 sleep(1);
                 break;
@@ -749,7 +749,7 @@ void test_motion_control(void) {
                 break;
                 
             case 7: {
-                MotionState state = get_motion_state();
+                motion_state_t state = get_motion_state();
                 printf("\n--- 运动状态信息 ---\n");
                 printf("当前方向: ");
                 switch (state.direction) {
@@ -769,7 +769,7 @@ void test_motion_control(void) {
                 
             case 8:
                 printf("停止运动并返回...\n");
-                stop_motion();
+                control_stop();
                 return;
                 
             default:
