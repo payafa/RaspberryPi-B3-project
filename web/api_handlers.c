@@ -41,31 +41,26 @@ void api_get_status(http_request_t *request, http_response_t *response) {
 void api_get_sensors(http_request_t *request, http_response_t *response) {
     (void)request; // 避免未使用参数警告
     
-    printf("API请求: GET /api/sensors
-");
+    printf("API请求: GET /api/sensors\n");
     
     cJSON *json = cJSON_CreateObject();
     cJSON *sensors = cJSON_CreateObject();
     
     // DHT11温湿度数据 - 使用更短的超时时间避免阻塞
     DHT11_Data dht_data;
-    printf("开始读取DHT11传感器数据...
-");
+    printf("开始读取DHT11传感器数据...\n");
     int dht_result = dht11_read_with_retry(&dht_data, 1); // 只重试1次，减少阻塞时间
-    printf("DHT11读取结果: %d
-", dht_result);
+    printf("DHT11读取结果: %d\n", dht_result);
     
     cJSON *dht = cJSON_CreateObject();
     if (dht_result == DHT_SUCCESS) {
-        printf("DHT11读取成功: 温度=%.1f°C, 湿度=%.1f%%
-", 
+        printf("DHT11读取成功: 温度=%.1f°C, 湿度=%.1f%%\n", 
                dht_data.temperature, dht_data.humidity);
         cJSON_AddNumberToObject(dht, "temperature", dht_data.temperature);
         cJSON_AddNumberToObject(dht, "humidity", dht_data.humidity);
         cJSON_AddStringToObject(dht, "status", "success");
     } else {
-        printf("DHT11读取失败，错误码: %d
-", dht_result);
+        printf("DHT11读取失败，错误码: %d\n", dht_result);
         cJSON_AddNumberToObject(dht, "temperature", 0);
         cJSON_AddNumberToObject(dht, "humidity", 0);
         cJSON_AddStringToObject(dht, "status", "error");
