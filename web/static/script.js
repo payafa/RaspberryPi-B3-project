@@ -1,5 +1,5 @@
-// API基础配置
-const API_BASE_URL = 'http://localhost:8080';
+// API基础配置 - 动态获取当前页面的host
+const API_BASE_URL = `${window.location.protocol}//${window.location.host}`;
 
 // 全局状态
 let autoRefresh = false;
