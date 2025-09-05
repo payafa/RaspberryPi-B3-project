@@ -130,13 +130,23 @@ class ApiClient {
     }
 
     static async controlRgb(action, color = null) {
+        console.log('ApiClient.controlRgb called:', { action, color });
         const body = { action };
         if (color) body.color = color;
         
-        return await this.request('/api/rgb', {
-            method: 'POST',
-            body: JSON.stringify(body)
-        });
+        console.log('Request body:', JSON.stringify(body));
+        
+        try {
+            const result = await this.request('/api/rgb', {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
+            console.log('RGB API response:', result);
+            return result;
+        } catch (error) {
+            console.error('RGB API request failed:', error);
+            throw error;
+        }
     }
 
     static async controlBeep(duration) {
@@ -210,13 +220,18 @@ class SensorManager {
 // RGB LED控制
 class RgbController {
     static async setColor(color) {
+        console.log('RgbController.setColor called with:', color);
         try {
             Utils.showLoading();
             const result = await ApiClient.controlRgb('on', color);
+            console.log('RGB setColor result:', result);
             
-            if (result.status === 'success') {
+            if (result && result.status === 'success') {
                 elements.rgbCurrentStatus.textContent = `${color}色`;
                 Utils.showNotification(`RGB LED已设置为${color}色`, 'success');
+            } else {
+                console.warn('RGB API returned non-success status:', result);
+                Utils.showNotification('RGB LED控制失败', 'error');
             }
         } catch (error) {
             console.error('RGB控制失败:', error);
