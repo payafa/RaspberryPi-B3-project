@@ -11,6 +11,7 @@
 #include "components/DHT.h"
 #include "components/usonic.h"
 #include "components/servo.h"
+#include "components/control.h"  // 新增运动控制
 #include "combo/alarm_clock.h"
 #include "combo/stopwatch.h"
 #include "combo/rgb_control.h"
@@ -27,6 +28,7 @@ void test_rgb(void);
 void test_dht_sensor(void);
 void test_usonic_sensor(void);
 void test_servo(void);
+void test_motion_control(void);  // 新增运动控制测试
 void test_temp_display(void);
 void clear_screen(void);
 void wait_for_input(void);
@@ -49,6 +51,7 @@ int main(void) {
     tm1637_init();
     rgb_init();
     usonic_init();
+    control_init();  // 新增运动控制初始化
     
     printf("系统初始化完成!\n");
     sleep(1);
@@ -113,11 +116,12 @@ void show_single_component_menu(void) {
         printf("║  5. DHT11温湿度传感器测试            ║\n");
         printf("║  6. 超声波距离传感器测试             ║\n");
         printf("║  7. 舵机控制测试                     ║\n");
-        printf("║  8. 返回主菜单                       ║\n");
+        printf("║  8. 运动控制测试                     ║\n");
+        printf("║  9. 返回主菜单                       ║\n");
         printf("╚══════════════════════════════════════╝\n");
         printf("\n");
         
-        printf("请选择测试项目 (1-8): ");
+        printf("请选择测试项目 (1-9): ");
         scanf("%d", &choice);
         
         switch (choice) {
@@ -143,6 +147,9 @@ void show_single_component_menu(void) {
                 test_servo();
                 break;
             case 8:
+                test_motion_control();
+                break;
+            case 9:
                 return; // 返回主菜单
             default:
                 printf("无效选择，请重新输入！\n");
@@ -656,5 +663,119 @@ void test_temp_display(void) {
             printf("无效选择！\n");
             wait_for_input();
             break;
+    }
+}
+
+// 运动控制测试函数
+void test_motion_control(void) {
+    int choice;
+    int speed = 50; // 默认速度50%
+    
+    printf("\n");
+    printf("╔══════════════════════════════════════╗\n");
+    printf("║          运动控制测试                ║\n");
+    printf("╠══════════════════════════════════════╣\n");
+    printf("║  测试轮子运动控制功能                ║\n");
+    printf("║  注意：确保轮子已正确连接            ║\n");
+    printf("╚══════════════════════════════════════╝\n");
+    printf("\n");
+    
+    while (1) {
+        printf("\n");
+        printf("╔══════════════════════════════════════╗\n");
+        printf("║          运动控制菜单                ║\n");
+        printf("╠══════════════════════════════════════╣\n");
+        printf("║  1. 前进                             ║\n");
+        printf("║  2. 后退                             ║\n");
+        printf("║  3. 左转                             ║\n");
+        printf("║  4. 右转                             ║\n");
+        printf("║  5. 停止                             ║\n");
+        printf("║  6. 设置速度 (当前: %d%%)             ║\n", speed);
+        printf("║  7. 显示运动状态                     ║\n");
+        printf("║  8. 返回上级菜单                     ║\n");
+        printf("╚══════════════════════════════════════╝\n");
+        printf("\n");
+        
+        printf("请选择操作 (1-8): ");
+        scanf("%d", &choice);
+        
+        switch (choice) {
+            case 1:
+                printf("执行前进运动 (速度: %d%%)...\n", speed);
+                move_forward(speed);
+                printf("前进命令已发送\n");
+                sleep(1);
+                break;
+                
+            case 2:
+                printf("执行后退运动 (速度: %d%%)...\n", speed);
+                move_backward(speed);
+                printf("后退命令已发送\n");
+                sleep(1);
+                break;
+                
+            case 3:
+                printf("执行左转运动 (速度: %d%%)...\n", speed);
+                turn_left(speed);
+                printf("左转命令已发送\n");
+                sleep(1);
+                break;
+                
+            case 4:
+                printf("执行右转运动 (速度: %d%%)...\n", speed);
+                turn_right(speed);
+                printf("右转命令已发送\n");
+                sleep(1);
+                break;
+                
+            case 5:
+                printf("停止所有运动...\n");
+                stop_motion();
+                printf("停止命令已发送\n");
+                sleep(1);
+                break;
+                
+            case 6:
+                printf("当前速度: %d%%\n", speed);
+                printf("请输入新速度 (0-100): ");
+                scanf("%d", &speed);
+                if (speed < 0 || speed > 100) {
+                    speed = 50;
+                    printf("无效速度，重置为50%%\n");
+                } else {
+                    printf("速度已设置为: %d%%\n", speed);
+                }
+                sleep(1);
+                break;
+                
+            case 7: {
+                MotionState state = get_motion_state();
+                printf("\n--- 运动状态信息 ---\n");
+                printf("当前方向: ");
+                switch (state.direction) {
+                    case MOTION_FORWARD:  printf("前进\n"); break;
+                    case MOTION_BACKWARD: printf("后退\n"); break;
+                    case MOTION_LEFT:     printf("左转\n"); break;
+                    case MOTION_RIGHT:    printf("右转\n"); break;
+                    case MOTION_STOP:     printf("停止\n"); break;
+                    default:              printf("未知\n"); break;
+                }
+                printf("当前速度: %d%%\n", state.speed);
+                printf("运动状态: %s\n", state.is_moving ? "运动中" : "静止");
+                printf("-------------------\n");
+                wait_for_input();
+                break;
+            }
+                
+            case 8:
+                printf("停止运动并返回...\n");
+                stop_motion();
+                return;
+                
+            default:
+                printf("无效选择！\n");
+                wait_for_input();
+                break;
+        }
     }
 }
