@@ -16,6 +16,7 @@
 void rgb_init(void);
 void rgb_sequence(void);
 void set_rgb(int red, int green, int blue);
+void rgb_set_color(int red, int green, int blue); // Web API兼容函数
 
 // 信号处理函数声明
 void rgb_signal_handler(int signal);

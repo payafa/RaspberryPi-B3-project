@@ -247,7 +247,7 @@ void handle_static_file(http_request_t *request, http_response_t *response) {
     long file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
     
-    if (file_size > sizeof(response->body)) {
+    if (file_size < 0 || (size_t)file_size > sizeof(response->body)) {
         create_error_response(response, 500, "File Too Large");
         fclose(file);
         return;

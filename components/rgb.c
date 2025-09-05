@@ -115,3 +115,8 @@ void rgb_sequence(void)
     // 退出时清理
     rgb_cleanup();
 }
+
+// Web API兼容函数 - 封装set_rgb函数
+void rgb_set_color(int red, int green, int blue) {
+    set_rgb(red, green, blue);
+}

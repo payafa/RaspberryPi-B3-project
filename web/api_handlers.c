@@ -9,6 +9,8 @@
 
 // API: 获取系统状态
 void api_get_status(http_request_t *request, http_response_t *response) {
+    (void)request; // 避免未使用参数警告
+    
     cJSON *json = cJSON_CreateObject();
     cJSON *status = cJSON_CreateString("online");
     cJSON *timestamp = cJSON_CreateNumber(time(NULL));
@@ -35,6 +37,8 @@ void api_get_status(http_request_t *request, http_response_t *response) {
 
 // API: 获取传感器数据
 void api_get_sensors(http_request_t *request, http_response_t *response) {
+    (void)request; // 避免未使用参数警告
+    
     cJSON *json = cJSON_CreateObject();
     cJSON *sensors = cJSON_CreateObject();
     
@@ -248,6 +252,8 @@ void api_control_servo(http_request_t *request, http_response_t *response) {
 
 // API: 获取距离数据
 void api_get_distance(http_request_t *request, http_response_t *response) {
+    (void)request; // 避免未使用参数警告
+    
     cJSON *json = cJSON_CreateObject();
     
     int distance = read_dist();

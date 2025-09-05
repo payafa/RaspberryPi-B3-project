@@ -60,7 +60,7 @@ void dc(char cmd[10]){
 
         for (int dc = 100; dc >= 0; dc -= 5) {
             softPwmWrite(WHEEL_L, dc);
-            elay(1000);
+            delay(1000);
         }
     }
 }
