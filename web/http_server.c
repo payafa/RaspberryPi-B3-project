@@ -219,6 +219,8 @@ void handle_api_request(http_request_t *request, http_response_t *response) {
         api_control_servo(request, response);
     } else if (strcmp(request->path, "/api/distance") == 0) {
         api_get_distance(request, response);
+    } else if (strcmp(request->path, "/api/motion") == 0) {
+        api_control_motion(request, response);  // 新增运动控制路由
     } else {
         create_error_response(response, 404, "API Not Found");
     }

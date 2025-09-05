@@ -5,6 +5,7 @@
 #include "../components/DHT.h"
 #include "../components/usonic.h"
 #include "../components/clock.h"
+#include "../components/control.h"  // 新增运动控制
 #include <cjson/cJSON.h>
 
 // API: 获取系统状态
@@ -23,6 +24,7 @@ void api_get_status(http_request_t *request, http_response_t *response) {
     cJSON_AddStringToObject(components, "dht11", "ready");
     cJSON_AddStringToObject(components, "ultrasonic", "ready");
     cJSON_AddStringToObject(components, "clock", "ready");
+    cJSON_AddStringToObject(components, "motion", "ready");  // 新增运动控制
     
     cJSON_AddItemToObject(json, "status", status);
     cJSON_AddItemToObject(json, "timestamp", timestamp);
@@ -269,6 +271,120 @@ void api_get_distance(http_request_t *request, http_response_t *response) {
     }
     
     cJSON_AddNumberToObject(json, "timestamp", time(NULL));
+    
+    char *json_string = cJSON_Print(json);
+    create_json_response(response, json_string);
+    
+    free(json_string);
+    cJSON_Delete(json);
+}
+
+// API: 运动控制
+void api_control_motion(http_request_t *request, http_response_t *response) {
+    cJSON *json = cJSON_CreateObject();
+    
+    if (strcmp(request->method, "POST") == 0) {
+        cJSON *post_json = cJSON_Parse(request->body);
+        if (!post_json) {
+            create_error_response(response, 400, "Invalid JSON");
+            return;
+        }
+        
+        cJSON *action = cJSON_GetObjectItem(post_json, "action");
+        if (!action || !cJSON_IsString(action)) {
+            create_error_response(response, 400, "Missing action parameter");
+            cJSON_Delete(post_json);
+            return;
+        }
+        
+        const char *action_str = cJSON_GetStringValue(action);
+        
+        // 获取可选参数
+        cJSON *speed_json = cJSON_GetObjectItem(post_json, "speed");
+        cJSON *duration_json = cJSON_GetObjectItem(post_json, "duration");
+        
+        int speed = 60; // 默认速度
+        int duration = 0; // 默认持续时间(0表示持续运动)
+        
+        if (speed_json && cJSON_IsNumber(speed_json)) {
+            speed = (int)cJSON_GetNumberValue(speed_json);
+            if (speed < 0) speed = 0;
+            if (speed > 100) speed = 100;
+        }
+        
+        if (duration_json && cJSON_IsNumber(duration_json)) {
+            duration = (int)cJSON_GetNumberValue(duration_json);
+            if (duration < 0) duration = 0;
+        }
+        
+        // 执行运动控制
+        if (strcmp(action_str, "forward") == 0) {
+            control_move_forward(speed);
+            cJSON_AddStringToObject(json, "status", "success");
+            cJSON_AddStringToObject(json, "message", "Moving forward");
+            cJSON_AddStringToObject(json, "action", "forward");
+            cJSON_AddNumberToObject(json, "speed", speed);
+        } else if (strcmp(action_str, "backward") == 0) {
+            control_move_backward(speed);
+            cJSON_AddStringToObject(json, "status", "success");
+            cJSON_AddStringToObject(json, "message", "Moving backward");
+            cJSON_AddStringToObject(json, "action", "backward");
+            cJSON_AddNumberToObject(json, "speed", speed);
+        } else if (strcmp(action_str, "left") == 0) {
+            control_turn_left(speed, duration);
+            cJSON_AddStringToObject(json, "status", "success");
+            cJSON_AddStringToObject(json, "message", "Turning left");
+            cJSON_AddStringToObject(json, "action", "left");
+            cJSON_AddNumberToObject(json, "speed", speed);
+            if (duration > 0) {
+                cJSON_AddNumberToObject(json, "duration", duration);
+            }
+        } else if (strcmp(action_str, "right") == 0) {
+            control_turn_right(speed, duration);
+            cJSON_AddStringToObject(json, "status", "success");
+            cJSON_AddStringToObject(json, "message", "Turning right");
+            cJSON_AddStringToObject(json, "action", "right");
+            cJSON_AddNumberToObject(json, "speed", speed);
+            if (duration > 0) {
+                cJSON_AddNumberToObject(json, "duration", duration);
+            }
+        } else if (strcmp(action_str, "stop") == 0) {
+            control_stop();
+            cJSON_AddStringToObject(json, "status", "success");
+            cJSON_AddStringToObject(json, "message", "Stopped");
+            cJSON_AddStringToObject(json, "action", "stop");
+        } else {
+            create_error_response(response, 400, "Invalid action");
+            cJSON_Delete(post_json);
+            return;
+        }
+        
+        cJSON_Delete(post_json);
+    } else if (strcmp(request->method, "GET") == 0) {
+        // 获取当前运动状态
+        motion_state_t state = get_motion_state();
+        
+        cJSON_AddStringToObject(json, "status", "success");
+        cJSON_AddNumberToObject(json, "left_speed", state.left_speed);
+        cJSON_AddNumberToObject(json, "right_speed", state.right_speed);
+        cJSON_AddNumberToObject(json, "is_moving", state.is_moving);
+        
+        const char *motion_name = "unknown";
+        switch (state.current_motion) {
+            case MOTION_STOP: motion_name = "stop"; break;
+            case MOTION_FORWARD: motion_name = "forward"; break;
+            case MOTION_BACKWARD: motion_name = "backward"; break;
+            case MOTION_LEFT: motion_name = "left"; break;
+            case MOTION_RIGHT: motion_name = "right"; break;
+            case MOTION_ACCELERATE: motion_name = "accelerate"; break;
+            case MOTION_DECELERATE: motion_name = "decelerate"; break;
+        }
+        cJSON_AddStringToObject(json, "current_motion", motion_name);
+    } else {
+        create_error_response(response, 405, "Method Not Allowed");
+        cJSON_Delete(json);
+        return;
+    }
     
     char *json_string = cJSON_Print(json);
     create_json_response(response, json_string);

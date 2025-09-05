@@ -150,6 +150,70 @@
                 </div>
             </section>
 
+            <!-- 运动控制面板 -->
+            <section class="card motion-panel">
+                <h2><i class="fas fa-gamepad"></i> 运动控制</h2>
+                <div class="motion-controls">
+                    <div class="speed-control">
+                        <label for="motion-speed">速度 (0-100):</label>
+                        <input type="range" id="motion-speed" min="0" max="100" value="60" step="5">
+                        <span id="speed-display">60</span>
+                    </div>
+                    
+                    <div class="direction-pad">
+                        <div class="dpad-row">
+                            <button id="motion-forward" class="dpad-btn forward" title="前进">
+                                <i class="fas fa-arrow-up"></i>
+                            </button>
+                        </div>
+                        <div class="dpad-row">
+                            <button id="motion-left" class="dpad-btn left" title="左转">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <button id="motion-stop" class="dpad-btn stop" title="停止">
+                                <i class="fas fa-stop"></i>
+                            </button>
+                            <button id="motion-right" class="dpad-btn right" title="右转">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <div class="dpad-row">
+                            <button id="motion-backward" class="dpad-btn backward" title="后退">
+                                <i class="fas fa-arrow-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="motion-options">
+                        <div class="duration-control">
+                            <label for="turn-duration">转向时长 (毫秒):</label>
+                            <input type="number" id="turn-duration" min="0" max="5000" value="1000" step="100">
+                        </div>
+                        <div class="motion-mode">
+                            <label>
+                                <input type="checkbox" id="continuous-mode"> 连续模式
+                                <small>(取消勾选则按设定时长执行)</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="motion-status">
+                    <div class="status-info">
+                        <span>状态: </span>
+                        <span id="motion-current-status">停止</span>
+                    </div>
+                    <div class="status-info">
+                        <span>左轮速度: </span>
+                        <span id="motion-left-speed">0</span>
+                    </div>
+                    <div class="status-info">
+                        <span>右轮速度: </span>
+                        <span id="motion-right-speed">0</span>
+                    </div>
+                </div>
+            </section>
+
             <!-- 系统状态面板 -->
             <section class="card system-panel">
                 <h2><i class="fas fa-server"></i> 系统状态</h2>

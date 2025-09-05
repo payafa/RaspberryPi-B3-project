@@ -12,6 +12,7 @@
 #include "components/DHT.h"
 #include "components/usonic.h"
 #include "components/servo.h"
+#include "components/control.h"  // 新增运动控制
 
 // 函数声明
 void show_web_menu(void);
@@ -155,6 +156,7 @@ void init_all_components(void) {
     usonic_init();
     dht11_init();
     servo_init();
+    control_init();  // 新增运动控制初始化
     
     printf("所有硬件组件初始化完成\n");
 }
@@ -165,6 +167,7 @@ void cleanup_all_components(void) {
     rgb_cleanup();
     clock_cleanup();
     servo_cleanup();
+    control_cleanup();  // 新增运动控制清理
     
     printf("硬件资源清理完成\n");
 }

@@ -35,7 +35,18 @@ const elements = {
     loadingOverlay: document.getElementById('loading-overlay'),
     notification: document.getElementById('notification'),
     notificationMessage: document.getElementById('notification-message'),
-    notificationClose: document.getElementById('notification-close')
+    notificationClose: document.getElementById('notification-close'),
+    // 运动控制元素
+    motionForward: document.getElementById('motion-forward'),
+    motionBackward: document.getElementById('motion-backward'),
+    motionLeft: document.getElementById('motion-left'),
+    motionRight: document.getElementById('motion-right'),
+    motionStop: document.getElementById('motion-stop'),
+    speedSlider: document.getElementById('speed-slider'),
+    speedValue: document.getElementById('speed-value'),
+    motionDirection: document.getElementById('motion-direction'),
+    motionSpeed: document.getElementById('motion-speed'),
+    motionState: document.getElementById('motion-state')
 };
 
 // 工具函数
@@ -142,6 +153,16 @@ class ApiClient {
         return await this.request('/api/servo', {
             method: 'POST',
             body: JSON.stringify({ angle: angle })
+        });
+    }
+
+    static async controlMotion(direction, speed) {
+        return await this.request('/api/motion', {
+            method: 'POST',
+            body: JSON.stringify({ 
+                action: direction,
+                speed: speed 
+            })
         });
     }
 
@@ -263,6 +284,97 @@ class ServoController {
     }
 }
 
+// 运动控制
+class MotionController {
+    static currentSpeed = 50;
+    static isMoving = false;
+    static currentDirection = 'stopped';
+
+    static async forward() {
+        return this.move('forward');
+    }
+
+    static async backward() {
+        return this.move('backward');
+    }
+
+    static async left() {
+        return this.move('left');
+    }
+
+    static async right() {
+        return this.move('right');
+    }
+
+    static async stop() {
+        return this.move('stop');
+    }
+
+    static async move(direction) {
+        try {
+            const result = await ApiClient.controlMotion(direction, this.currentSpeed);
+            
+            if (result.status === 'success') {
+                this.currentDirection = direction;
+                this.isMoving = direction !== 'stop';
+                this.updateMotionStatus();
+                
+                const actionText = this.getActionText(direction);
+                Utils.showNotification(actionText, 'success');
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('运动控制失败:', error);
+            Utils.showNotification('运动控制失败', 'error');
+            return null;
+        }
+    }
+
+    static setSpeed(speed) {
+        this.currentSpeed = parseInt(speed);
+        if (elements.speedValue) {
+            elements.speedValue.textContent = `${speed}%`;
+        }
+        this.updateMotionStatus();
+    }
+
+    static updateMotionStatus() {
+        if (elements.motionDirection) {
+            elements.motionDirection.textContent = this.getDirectionText(this.currentDirection);
+        }
+        if (elements.motionSpeed) {
+            elements.motionSpeed.textContent = `${this.currentSpeed}%`;
+        }
+        if (elements.motionState) {
+            elements.motionState.textContent = this.isMoving ? '运行中' : '停止';
+        }
+    }
+
+    static getDirectionText(direction) {
+        const directions = {
+            'forward': '前进',
+            'backward': '后退',
+            'left': '左转',
+            'right': '右转',
+            'stop': '停止',
+            'stopped': '停止'
+        };
+        return directions[direction] || '未知';
+    }
+
+    static getActionText(direction) {
+        const actions = {
+            'forward': '开始前进',
+            'backward': '开始后退',
+            'left': '开始左转',
+            'right': '开始右转',
+            'stop': '已停止运动'
+        };
+        return actions[direction] || '运动状态变更';
+    }
+}
+
 // 系统状态管理
 class SystemManager {
     static async checkStatus() {
@@ -380,6 +492,43 @@ function setupEventListeners() {
         SystemManager.toggleAutoRefresh();
     });
 
+    // 运动控制事件
+    if (elements.motionForward) {
+        elements.motionForward.addEventListener('click', () => {
+            MotionController.forward();
+        });
+    }
+
+    if (elements.motionBackward) {
+        elements.motionBackward.addEventListener('click', () => {
+            MotionController.backward();
+        });
+    }
+
+    if (elements.motionLeft) {
+        elements.motionLeft.addEventListener('click', () => {
+            MotionController.left();
+        });
+    }
+
+    if (elements.motionRight) {
+        elements.motionRight.addEventListener('click', () => {
+            MotionController.right();
+        });
+    }
+
+    if (elements.motionStop) {
+        elements.motionStop.addEventListener('click', () => {
+            MotionController.stop();
+        });
+    }
+
+    if (elements.speedSlider) {
+        elements.speedSlider.addEventListener('input', (e) => {
+            MotionController.setSpeed(e.target.value);
+        });
+    }
+
     // 通知关闭
     elements.notificationClose.addEventListener('click', () => {
         Utils.hideNotification();
@@ -396,6 +545,34 @@ function setupEventListeners() {
                 case 'q':
                     e.preventDefault();
                     SystemManager.checkStatus();
+                    break;
+            }
+        } else {
+            // 运动控制快捷键 (WASD + 空格)
+            switch (e.key.toLowerCase()) {
+                case 'w':
+                case 'arrowup':
+                    e.preventDefault();
+                    MotionController.forward();
+                    break;
+                case 's':
+                case 'arrowdown':
+                    e.preventDefault();
+                    MotionController.backward();
+                    break;
+                case 'a':
+                case 'arrowleft':
+                    e.preventDefault();
+                    MotionController.left();
+                    break;
+                case 'd':
+                case 'arrowright':
+                    e.preventDefault();
+                    MotionController.right();
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    MotionController.stop();
                     break;
             }
         }
@@ -428,6 +605,13 @@ async function initializeApp() {
         
         // 获取初始传感器数据
         await SensorManager.updateSensorData();
+        
+        // 初始化运动控制状态
+        MotionController.updateMotionStatus();
+        if (elements.speedSlider) {
+            elements.speedSlider.value = MotionController.currentSpeed;
+            MotionController.setSpeed(MotionController.currentSpeed);
+        }
         
         Utils.showNotification('系统初始化完成', 'success');
     } catch (error) {
