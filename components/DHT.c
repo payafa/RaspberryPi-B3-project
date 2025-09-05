@@ -179,11 +179,6 @@ unsigned char dht11_read_with_retry(DHT11_Data *data, int max_retry)
 // 新增：初始化DHT11
 int dht11_init()
 {
-    // 初始化wiringPi
-    if (wiringPiSetupGpio() == -1) {
-        return -1;
-    }
-    
     // 设置初始状态
     pinMode(DHT_PIN, OUTPUT);
     digitalWrite(DHT_PIN, 1);

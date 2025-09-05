@@ -267,11 +267,14 @@ void roll_display(char *input_data, int len)
 
 void tm1637_init()
 {
+    // 不再重复初始化wiringPi，因为web_main.c中已经初始化过了
+    /*
     if (wiringPiSetupGpio() < 0)
     {
         perror("init失败");
         exit(1);
     }
+    */
     pinMode(CLK, OUTPUT);
     pinMode(DIO, OUTPUT);
 

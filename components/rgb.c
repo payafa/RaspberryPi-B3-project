@@ -46,11 +46,15 @@ int rgb_is_running(void)
 
 void rgb_init(void)
 {
+    // 不再重复初始化wiringPi，因为web_main.c中已经初始化过了
+    // 注释掉重复的初始化代码
+    /*
     if (wiringPiSetupGpio() < 0)
     {
         perror("启动树莓派GPIO失败");
         exit(1);
     }
+    */
 
     // 设置引脚为输出模式
     pinMode(R, OUTPUT);

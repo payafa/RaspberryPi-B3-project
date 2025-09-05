@@ -48,11 +48,14 @@ int servo_is_running(void)
 // 舵机初始化
 void servo_init(void)
 {
+    // 不再重复初始化wiringPi，因为web_main.c中已经初始化过了
+    /*
     if (wiringPiSetupGpio() < 0)
     {
         printf("舵机: wiringPi初始化失败\n");
         exit(1);
     }
+    */
     
     // 设置引脚为输出模式
     pinMode(SERVO_PIN, OUTPUT);
