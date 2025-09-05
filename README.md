@@ -1,18 +1,59 @@
 # 树莓派B3硬件控制项目
 
-这是一个基于树莓派B3的硬件控制项目，使用C语言和WiringPi库实现了多个电子元件的控制，包括按钮检测、TM1637四位数码管时钟显示、RGB LED控制和蜂鸣器控制。
+这是一个基于树莓派B3的硬件控制项目，使用C语言和WiringPi库实现了多个电子元件的控制，包括按钮检测、TM1637四位数码管时钟显示、RGB LED控制、蜂鸣器控制等功能，并提供了**Web界面**和命令行两种控制方式。
+
+## 🌟 新功能：Web界面控制
+
+现在支持通过Web浏览器远程控制硬件设备！
+
+### Web界面特性
+- 📱 **响应式设计** - 支持手机、平板、电脑访问
+- 🔄 **实时数据** - 自动刷新传感器数据
+- 🎨 **现代化UI** - 美观的界面设计
+- 🚀 **RESTful API** - 支持HTTP API调用
+- ⚡ **快速响应** - 基于C语言的高性能服务器
+
+### 快速开始
+```bash
+# 编译Web版本
+make -f Makefile.web
+
+# 运行Web服务器
+sudo ./web_main
+
+# 访问Web界面
+http://localhost:8080
+```
 
 ## 项目结构
 
 ```
 RaspberryPi-B3-project/
-├── main.c              # 主程序文件，包含菜单系统和演示模式
-├── Makefile            # 编译配置文件
-├── components/         # 组件模块目录
-│   ├── botton.c/.h     # 按钮控制模块
-│   ├── clock.c/.h      # TM1637数码管时钟显示模块
-│   ├── beep.c/.h       # 蜂鸣器控制模块
-│   └── rgb.c/.h        # RGB LED控制模块
+├── main.c              # 原始命令行主程序
+├── web_main.c          # Web服务器主程序
+├── Makefile            # 原始编译配置
+├── Makefile.web        # Web版本编译配置
+├── web/                # Web服务器模块
+│   ├── http_server.h   # HTTP服务器头文件
+│   ├── http_server.c   # HTTP服务器实现
+│   ├── api_handlers.c  # API处理器
+│   └── static/         # 静态Web文件
+│       ├── index.html  # 主页面
+│       ├── style.css   # 样式文件
+│       └── script.js   # 前端JavaScript
+├── components/         # 硬件组件模块
+│   ├── beep.c/.h       # 蜂鸣器控制
+│   ├── botton.c/.h     # 按钮控制
+│   ├── clock.c/.h      # TM1637数码管
+│   ├── rgb.c/.h        # RGB LED控制
+│   ├── DHT.c/.h        # 温湿度传感器
+│   ├── usonic.c/.h     # 超声波传感器
+│   └── servo.c/.h      # 舵机控制
+├── combo/              # 组合功能模块
+│   ├── alarm_clock.c/.h    # 闹钟功能
+│   ├── stopwatch.c/.h      # 秒表功能
+│   ├── temp_display.c/.h   # 温度显示
+│   └── rgb_control.c/.h    # RGB控制
 └── README.md           # 项目说明文档
 ```
 
@@ -32,38 +73,40 @@ RaspberryPi-B3-project/
 
 ## TODO List
 
-### 元件功能
+### ✅ 已完成功能
 - [x] 实现按钮基本模块
 - [x] 实现蜂鸣器基本模块
 - [x] 实现数码管基本模块
 - [x] 用数码管显示实际时间(时:分)
 - [x] 实现LED基本模块
+- [x] 实现温湿度传感器模块 (DHT11)
+- [x] 实现超声波距离传感器模块
+- [x] 实现舵机控制模块
+- [x] **实现Web界面控制** ⭐
+- [x] **RESTful API接口** ⭐
+- [x] **响应式前端设计** ⭐
+
+### 🚧 组合功能
+- [x] 实现闹钟功能（设定闹钟时间，到时间蜂鸣器响铃，LED闪烁）
+- [x] 实现秒表功能（按钮开始/暂停/重置，数码管显示计时）
+- [x] 实现温度显示功能（集成温度传感器，数码管显示温度）
+- [x] 实现按钮控制RGB灯颜色切换
+
+### 🔮 待开发功能
 - [ ] 添加长按按钮功能（区分短按和长按操作）
-- [ ] 实现温湿度传感器模块
 - [ ] 实现音乐播放功能（蜂鸣器播放简单旋律）
+- [ ] WebSocket实时通信
+- [ ] 添加手机APP远程控制
+- [ ] 添加定时任务调度器
+- [ ] 实现数据记录和图表显示
+- [ ] 集成物联网功能（MQTT、云平台对接）
 
-### 组合功能
-- [ ] 实现闹钟功能（设定闹钟时间，到时间蜂鸣器响铃，LED闪烁）
-- [ ] 实现秒表功能（按钮开始/暂停/重置，数码管显示计时）
-- [ ] 实现温度显示功能（集成温度传感器，数码管显示温度）
-- [ ] 实现按钮控制RGB灯颜色切换
-
-### 界面优化
-- [ ] 编写前端界面
-
-### 代码优化
+### 🛠️ 代码优化
 - [ ] 添加配置文件支持（保存用户设置）
 - [ ] 实现非阻塞式按钮检测（使用中断）
 - [ ] 添加错误日志记录功能
 - [ ] 优化内存使用和资源管理
 - [ ] 添加单元测试用例
-
-### 高级功能
-- [ ] 实现Web界面控制
-- [ ] 添加手机APP远程控制
-- [ ] 添加定时任务调度器
-- [ ] 实现数据记录和图表显示
-- [ ] 集成物联网功能（MQTT、云平台对接）
 
 ## 编译和运行
 
@@ -73,15 +116,189 @@ RaspberryPi-B3-project/
 - Raspbian OS
 - WiringPi库
 - GCC编译器
+- libcjson库 (Web版本)
 
 ### 安装依赖
 
 ```bash
-# 安装WiringPi库
+# 更新系统
 sudo apt update
+
+# 安装编译工具
+sudo apt install build-essential
+
+# 安装WiringPi库
 sudo apt install wiringpi
 
+# 安装cJSON库 (Web版本需要)
+sudo apt install libcjson-dev
+
 # 验证安装
+gpio -v
+```
+
+### 编译项目
+
+#### 方式一：使用Web版本Makefile（推荐）
+```bash
+# 编译所有版本
+make -f Makefile.web
+
+# 只编译Web版本
+make -f Makefile.web web-only
+
+# 只编译命令行版本
+make -f Makefile.web main-only
+
+# 检查依赖
+make -f Makefile.web check-deps
+
+# 安装依赖
+make -f Makefile.web install-deps
+```
+
+#### 方式二：使用原始Makefile
+```bash
+# 编译命令行版本
+make
+
+# 清理编译文件
+make clean
+```
+
+### 运行程序
+
+#### Web界面版本（推荐）
+```bash
+# 运行Web服务器
+sudo ./web_main
+
+# 然后在浏览器中访问
+http://localhost:8080
+```
+
+#### 命令行版本
+```bash
+sudo ./main
+```
+
+## 🌐 Web API文档
+
+### 基础URL
+```
+http://localhost:8080/api/
+```
+
+### API端点
+
+#### 1. 获取系统状态
+```http
+GET /api/status
+```
+响应示例：
+```json
+{
+  "status": "online",
+  "timestamp": 1699123456,
+  "components": {
+    "rgb": "ready",
+    "beep": "ready",
+    "servo": "ready",
+    "dht11": "ready",
+    "ultrasonic": "ready",
+    "clock": "ready"
+  }
+}
+```
+
+#### 2. 获取传感器数据
+```http
+GET /api/sensors
+```
+响应示例：
+```json
+{
+  "timestamp": 1699123456,
+  "sensors": {
+    "dht11": {
+      "temperature": 23.5,
+      "humidity": 60.2,
+      "status": "success"
+    },
+    "ultrasonic": {
+      "distance": 15,
+      "status": "success"
+    }
+  }
+}
+```
+
+#### 3. 控制RGB LED
+```http
+POST /api/rgb
+Content-Type: application/json
+
+{
+  "action": "on",
+  "color": "red"  // red, green, blue, white
+}
+```
+
+```http
+POST /api/rgb
+Content-Type: application/json
+
+{
+  "action": "off"
+}
+```
+
+#### 4. 控制蜂鸣器
+```http
+POST /api/beep
+Content-Type: application/json
+
+{
+  "action": "beep",
+  "duration": 1000  // 毫秒
+}
+```
+
+#### 5. 控制舵机
+```http
+POST /api/servo
+Content-Type: application/json
+
+{
+  "angle": 90  // 0-180度
+}
+```
+
+#### 6. 获取距离数据
+```http
+GET /api/distance
+```
+
+### 使用curl测试API
+```bash
+# 获取系统状态
+curl http://localhost:8080/api/status
+
+# 控制RGB LED
+curl -X POST -H "Content-Type: application/json" \
+     -d '{"action":"on","color":"red"}' \
+     http://localhost:8080/api/rgb
+
+# 控制蜂鸣器
+curl -X POST -H "Content-Type: application/json" \
+     -d '{"action":"beep","duration":1000}' \
+     http://localhost:8080/api/beep
+
+# 控制舵机
+curl -X POST -H "Content-Type: application/json" \
+     -d '{"angle":45}' \
+     http://localhost:8080/api/servo
+```
 gpio -v
 ```
 
