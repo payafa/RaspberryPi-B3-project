@@ -47,21 +47,17 @@ int rgb_is_running(void)
 void rgb_init(void)
 {
     // 不再重复初始化wiringPi，因为web_main.c中已经初始化过了
-    // 注释掉重复的初始化代码
-    /*
-    if (wiringPiSetupGpio() < 0)
-    {
-        perror("启动树莓派GPIO失败");
-        exit(1);
-    }
-    */
-
+    printf("RGB初始化开始...\n");
+    
     // 设置引脚为输出模式
+    printf("设置RGB引脚为输出模式...\n");
     pinMode(R, OUTPUT);
     pinMode(G, OUTPUT);
     pinMode(B, OUTPUT);
+    printf("引脚模式设置完成: R=%d, G=%d, B=%d\n", R, G, B);
 
     // 初始状态：所有LED关闭
+    printf("设置初始状态（全部关闭）...\n");
     digitalWrite(R, 0);
     digitalWrite(G, 0);
     digitalWrite(B, 0);
@@ -71,9 +67,18 @@ void rgb_init(void)
 
 void set_rgb(int red, int green, int blue)
 {
+    printf("设置RGB: R=%d, G=%d, B=%d\n", red, green, blue);
     digitalWrite(R, red);
     digitalWrite(G, green);
     digitalWrite(B, blue);
+    printf("GPIO写入完成\n");
+}
+
+// 新增：rgb_set_color函数（Web API使用）
+void rgb_set_color(int red, int green, int blue)
+{
+    printf("rgb_set_color调用: R=%d, G=%d, B=%d\n", red, green, blue);
+    set_rgb(red, green, blue);
 }
 
 void rgb_sequence(void)

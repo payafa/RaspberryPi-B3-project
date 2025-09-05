@@ -23,11 +23,16 @@ void cleanup_all_components(void);
 int main(void) {
     int choice;
     
+    printf("=== Web服务器启动 ===\n");
+    printf("检查用户权限: UID=%d, GID=%d\n", getuid(), getgid());
+    
     // 初始化 wiringPi
+    printf("正在初始化 wiringPi...\n");
     if (wiringPiSetupGpio() == -1) {
         printf("初始化 wiringPi 失败!\n");
         return 1;
     }
+    printf("wiringPi 初始化成功!\n");
     
     printf("=== 树莓派B3项目控制系统 ===\n");
     printf("系统初始化中...\n");
@@ -148,15 +153,40 @@ void show_web_menu(void) {
 }
 
 void init_all_components(void) {
+    printf("开始初始化硬件组件...\n");
+    
     // 初始化各个组件
+    printf("1. 初始化蜂鸣器...");
     beep_init();
+    printf(" 完成\n");
+    
+    printf("2. 初始化按钮...");
     botton_init();
+    printf(" 完成\n");
+    
+    printf("3. 初始化时钟显示...");
     tm1637_init();
+    printf(" 完成\n");
+    
+    printf("4. 初始化RGB LED...");
     rgb_init();
+    printf(" 完成\n");
+    
+    printf("5. 初始化超声波传感器...");
     usonic_init();
+    printf(" 完成\n");
+    
+    printf("6. 初始化DHT11传感器...");
     dht11_init();
+    printf(" 完成\n");
+    
+    printf("7. 初始化舵机...");
     servo_init();
+    printf(" 完成\n");
+    
+    printf("8. 初始化运动控制...");
     control_init();  // 新增运动控制初始化
+    printf(" 完成\n");
     
     printf("所有硬件组件初始化完成\n");
 }
