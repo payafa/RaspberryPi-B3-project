@@ -10,6 +10,7 @@
 #include "components/rgb.h"
 #include "components/DHT.h"
 #include "components/usonic.h"
+#include "components/servo.h"
 #include "combo/alarm_clock.h"
 #include "combo/stopwatch.h"
 #include "combo/rgb_control.h"
@@ -25,6 +26,7 @@ void test_clock(void);
 void test_rgb(void);
 void test_dht_sensor(void);
 void test_usonic_sensor(void);
+void test_servo(void);
 void test_temp_display(void);
 void clear_screen(void);
 void wait_for_input(void);
@@ -110,11 +112,12 @@ void show_single_component_menu(void) {
         printf("║  4. RGB LED测试                      ║\n");
         printf("║  5. DHT11温湿度传感器测试            ║\n");
         printf("║  6. 超声波距离传感器测试             ║\n");
-        printf("║  7. 返回主菜单                       ║\n");
+        printf("║  7. 舵机控制测试                     ║\n");
+        printf("║  8. 返回主菜单                       ║\n");
         printf("╚══════════════════════════════════════╝\n");
         printf("\n");
         
-        printf("请选择测试项目 (1-7): ");
+        printf("请选择测试项目 (1-8): ");
         scanf("%d", &choice);
         
         switch (choice) {
@@ -137,6 +140,9 @@ void show_single_component_menu(void) {
                 test_usonic_sensor();
                 break;
             case 7:
+                test_servo();
+                break;
+            case 8:
                 return; // 返回主菜单
             default:
                 printf("无效选择，请重新输入！\n");
@@ -484,6 +490,63 @@ void test_usonic_sensor(void) {
                 break;
 
             case 3:
+                return;
+                
+            default:
+                printf("无效选择，请重新输入！\n");
+                wait_for_input();
+                break;
+        }
+    }
+}
+
+// 舵机控制测试
+void test_servo(void) {
+    int choice;
+    int angle;
+    
+    while (1) {
+        clear_screen();
+        printf("\n=== 舵机控制测试 ===\n");
+        printf("1. 设置舵机角度\n");
+        printf("2. 舵机扫描演示\n");
+        printf("3. 舵机完整演示\n");
+        printf("4. 返回\n");
+        printf("请选择 (1-4): ");
+        scanf("%d", &choice);
+        
+        switch (choice) {
+            case 1:
+                printf("\n请输入目标角度 (0-180): ");
+                scanf("%d", &angle);
+                if (angle >= 0 && angle <= 180) {
+                    printf("正在初始化舵机...\n");
+                    servo_init();
+                    printf("设置舵机角度为 %d 度...\n", angle);
+                    servo_set_angle(angle);
+                    printf("舵机角度设置完成\n");
+                } else {
+                    printf("角度范围错误！请输入0-180之间的角度\n");
+                }
+                wait_for_input();
+                break;
+                
+            case 2:
+                printf("\n开始舵机扫描演示...\n");
+                printf("舵机将在0-180度之间来回扫描\n");
+                printf("按Ctrl+C停止演示\n");
+                servo_init();
+                servo_sweep();
+                break;
+
+            case 3:
+                printf("\n开始舵机完整演示...\n");
+                printf("包含角度测试和扫描演示\n");
+                printf("按Ctrl+C中断演示\n");
+                servo_demo();
+                break;
+
+            case 4:
                 return;
                 
             default:
