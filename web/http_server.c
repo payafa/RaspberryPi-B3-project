@@ -247,14 +247,20 @@ void handle_static_file(http_request_t *request, http_response_t *response) {
     long file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
     
-    if (file_size < 0 || (size_t)file_size > sizeof(response->body)) {
+    if (file_size < 0) {
+        create_error_response(response, 500, "File Error");
+        fclose(file);
+        return;
+    }
+    
+    if ((size_t)file_size > MAX_FILE_SIZE) {
         create_error_response(response, 500, "File Too Large");
         fclose(file);
         return;
     }
     
     // 读取文件内容
-    response->body_length = fread(response->body, 1, file_size, file);
+    response->body_length = fread(response->body, 1, (size_t)file_size, file);
     fclose(file);
     
     response->status_code = 200;

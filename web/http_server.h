@@ -16,8 +16,9 @@
 
 // 服务器配置
 #define SERVER_PORT 8080
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 8192
 #define MAX_CONNECTIONS 10
+#define MAX_FILE_SIZE 65536  // 64KB - 最大文件大小
 
 // HTTP状态码
 #define HTTP_OK "200 OK"
@@ -37,7 +38,7 @@ typedef struct {
     char method[16];
     char path[256];
     char query[512];
-    char body[2048];
+    char body[4096];  // 增加请求体大小
     int content_length;
 } http_request_t;
 
@@ -46,7 +47,7 @@ typedef struct {
     int status_code;
     char status_text[64];
     char content_type[64];
-    char body[4096];
+    char body[MAX_FILE_SIZE];  // 使用更大的缓冲区
     int body_length;
 } http_response_t;
 
