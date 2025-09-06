@@ -9,16 +9,10 @@ void init_wheel(){
     pinMode(WHEEL_L, OUTPUT);
     pinMode(WHEEL_R, OUTPUT);
 
-    // 创建软件PWM
-    softPwmCreate(WHEEL_L, 0, 100);
-    softPwmCreate(WHEEL_R, 0, 100);
-
     // 初始设置
     digitalWrite(WHEEL_R, LOW);
     digitalWrite(WHEEL_L, LOW);
-    softPwmWrite(WHEEL_L, 0);
-    softPwmWrite(WHEEL_R, 0);
-    
+
     // 初始化状态
     g_motion_state.left_speed = 0;
     g_motion_state.right_speed = 0;
@@ -37,77 +31,6 @@ void clean_wheel(){
     pinMode(WHEEL_R, INPUT);
     
     printf("轮子控制模块清理完成\n");
-}
-
-//加速
-void ac(char cmd[10]){
-    // 移除换行符
-    cmd[strcspn(cmd, "\n")] = 0;
-    if (strcmp(cmd, "ac") == 0) {
-        digitalWrite(WHEEL_R, LOW);
-        softPwmWrite(WHEEL_L, 0);
-            
-        for (int dc = 0; dc <= 100; dc += 5) {
-            softPwmWrite(WHEEL_L, dc);
-            delay(1000);
-        }
-    }
-}
-
-//减速
-void dc(char cmd[10]){
-    if (strcmp(cmd, "dc") == 0) {
-        digitalWrite(WHEEL_R, LOW);
-        softPwmWrite(WHEEL_L, 100);
-
-        for (int dc = 100; dc >= 0; dc -= 5) {
-            softPwmWrite(WHEEL_L, dc);
-            delay(1000);
-        }
-    }
-}
-
-//停止
-void p(char cmd[10]){
-    if (strcmp(cmd, "p") == 0) {
-        control_stop();
-    }
-}
-
-// 新增：左转功能
-void turn_left(char cmd[10]){
-    cmd[strcspn(cmd, "\n")] = 0; // 移除换行符
-    if (strcmp(cmd, "tl") == 0) {
-        printf("执行左转动作\n");
-        control_turn_left(TURN_SPEED, TURN_DURATION);
-    }
-}
-
-// 新增：右转功能
-void turn_right(char cmd[10]){
-    cmd[strcspn(cmd, "\n")] = 0; // 移除换行符
-    if (strcmp(cmd, "tr") == 0) {
-        printf("执行右转动作\n");
-        control_turn_right(TURN_SPEED, TURN_DURATION);
-    }
-}
-
-// 新增：前进功能
-void move_forward(char cmd[10]){
-    cmd[strcspn(cmd, "\n")] = 0; // 移除换行符
-    if (strcmp(cmd, "fw") == 0) {
-        printf("执行前进动作\n");
-        control_move_forward(TURN_SPEED);
-    }
-}
-
-// 新增：后退功能
-void move_backward(char cmd[10]){
-    cmd[strcspn(cmd, "\n")] = 0; // 移除换行符
-    if (strcmp(cmd, "bw") == 0) {
-        printf("执行后退动作\n");
-        control_move_backward(TURN_SPEED);
-    }
 }
 
 // Web API兼容函数：左转
@@ -243,14 +166,4 @@ void control_motion(motion_type_t motion, int speed, int duration) {
             }
             break;
     }
-}
-
-// 初始化控制模块
-void control_init(void) {
-    init_wheel();
-}
-
-// 清理控制模块
-void control_cleanup(void) {
-    clean_wheel();
 }
