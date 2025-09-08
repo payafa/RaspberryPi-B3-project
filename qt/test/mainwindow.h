@@ -21,15 +21,25 @@ public slots:
     void onConnected();
     void onDisconnected();
     void onReadyRead();
+    void socketSendMessage(char*);
+
     void onforwardButton_pressed();
     void onforwardButton_released();
-    void onbackButton_pressed();
-    void onbackButton_released();
+    void onbackwardButton_pressed();
+    void onbackwardButton_released();
     void onleftButton_pressed();
     void onleftButton_released();
     void onrightButton_pressed();
     void onrightButton_released();
-    void socketSendMessage(char*);
+    void onforwardleftButton_pressd();
+    void onforwardleftButton_released();
+    void onforwardrightButton_pressed();
+    void onforwardrightButton_released();
+    void onbackwardleftButton_pressed();
+    void onbackwardleftButton_released();
+    void onbackwardrightButton_pressed();
+    void onbackwardrightButton_released();
+
     // void on_forwardButton_pressing();
 
 private:
