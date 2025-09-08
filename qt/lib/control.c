@@ -14,8 +14,6 @@ typedef enum {
     STOP,
     FORWARD,
     BACKWARD,
-    LEFT,
-    RIGHT,
     SPINLEFT,
     SPINRIGHT,
     FORWARDLEFT,

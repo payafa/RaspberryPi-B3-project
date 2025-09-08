@@ -16,8 +16,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(socket, &QTcpSocket::connected, this, &MainWindow::onConnected);
     connect(ui -> forwardButton, &QPushButton::pressed, this, &MainWindow::onforwardButton_pressed);
     connect(ui -> forwardButton, &QPushButton::released, this, &MainWindow::onforwardButton_released);
-    connect(ui -> backButton, &QPushButton::pressed, this, &MainWindow::onbackButton_pressed);
-    connect(ui -> backButton, &QPushButton::released, this, &MainWindow::onbackButton_released);
+    connect(ui -> backwardButton, &QPushButton::pressed, this, &MainWindow::onbackwardButton_pressed);
+    connect(ui -> backwardButton, &QPushButton::released, this, &MainWindow::onbackwardButton_released);
     connect(ui -> leftButton, &QPushButton::pressed, this, &MainWindow::onleftButton_pressed);
     connect(ui -> leftButton, &QPushButton::released, this, &MainWindow::onleftButton_released);
     connect(ui -> rightButton, &QPushButton::pressed, this, &MainWindow::onrightButton_pressed);
@@ -93,36 +93,43 @@ void MainWindow::onforwardButton_released(){
     socketSendMessage(cmd);
 }
 
-void MainWindow::onbackButton_pressed(){
+void MainWindow::onbackwardButton_pressed(){
     qDebug() << "后退按键触发";
-    char* cmd = "back";
+    char* cmd = "backward";
     socketSendMessage(cmd);
 }
-void MainWindow::onbackButton_released(){
+
+void MainWindow::onbackwardButton_released(){
     qDebug() << "后退按键释放";
     char* cmd = "stop";
     socketSendMessage(cmd);
 }
+
 void MainWindow::onleftButton_pressed(){
     qDebug() << "左转按键触发";
-    char* cmd = "left";
+    char* cmd = "spinleft";
     socketSendMessage(cmd);
 }
+
 void MainWindow::onleftButton_released(){
     qDebug() << "左转按键释放";
     char* cmd = "stop";
     socketSendMessage(cmd);
 }
+
 void MainWindow::onrightButton_pressed(){
     qDebug() << "右转按键触发";
-    char* cmd = "right";
+    char* cmd = "spinright";
     socketSendMessage(cmd);
 }
+
 void MainWindow::onrightButton_released(){
     qDebug() << "右转按键释放";
     char* cmd = "stop";
     socketSendMessage(cmd);
 }
+
+
 
 // void MainWindow::on_forwardButton_pressing(){
 //     qDebug() << "按键触发";
