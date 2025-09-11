@@ -4,6 +4,7 @@
 #include <string.h>
 #include <softPwm.h>
 #include <unistd.h>
+#include <time.h>
 
 #define LP 18
 #define LN 23
@@ -57,39 +58,16 @@ void init(){
     initSoftPWM();
 }
 
-// void stop() {
-//     softPwmWrite(LP, 0);
-//     softPwmWrite(LN, 0);
-//     softPwmWrite(RP, 0);
-//     softPwmWrite(RN, 0);
-//     printf("停止\n");
-// }
-    
-// void forward(){
-//     softPwmWrite(LP, SPEED); 
-//     softPwmWrite(LN, 0);
-//     softPwmWrite(RP, SPEED);
-//     softPwmWrite(RN, 0);
-//     printf("前进\n");
-// }
-
-// void back(){
-//     softPwmWrite(LP, 0);
-//     softPwmWrite(LN, SPEED);
-//     softPwmWrite(RP, 0);
-//     softPwmWrite(RN, SPEED);
-//     printf("后退\n");
-// }
 
 // 设置单侧电机的速度和方向
 void setMotor(int pin1, int pin2, int speed, int direction) {
-    if (direction == 1) {  // 正转
+    if (direction == 1) {
         softPwmWrite(pin1, speed);
         softPwmWrite(pin2, 0);
-    } else if (direction == -1) {  // 反转
+    } else if (direction == -1) {
         softPwmWrite(pin1, 0);
         softPwmWrite(pin2, speed);
-    } else {  // 停止
+    } else {
         softPwmWrite(pin1, 0);
         softPwmWrite(pin2, 0);
     }
@@ -120,7 +98,7 @@ void stop() {
 
 // 前进
 void forward(int speed) {
-    setMotors(speed, speed, 1, 1);
+    setMotors(speed, speed, -1, -1);
     current_mode = FORWARD;
     current_speed = speed;
     printf("前进 - 速度: %d\n", speed);
@@ -128,7 +106,7 @@ void forward(int speed) {
 
 // 后退
 void backward(int speed) {
-    setMotors(speed, speed, -1, -1);
+    setMotors(speed, speed, 1, 1);
     current_mode = BACKWARD;
     current_speed = speed;
     printf("后退 - 速度: %d\n", speed);
@@ -136,15 +114,15 @@ void backward(int speed) {
 
 // 原地左转
 void spinleft(int speed) {
-    setMotors(speed, speed, -1, 1);  // 左轮后退，右轮前进
-    current_mode = SPINLEFT;
+    setMotors(speed, speed, 1, -1);
+    current_mode = SPINRIGHT;
     printf("原地左转 - 速度: %d\n", speed);
 }
 
 // 原地右转
 void spinright(int speed) {
-    setMotors(speed, speed, 1, -1);  // 左轮前进，右轮后退
-    current_mode = SPINRIGHT;
+    setMotors(speed, speed, -1, 1);
+    current_mode = SPINLEFT;
     printf("原地右转 - 速度: %d\n", speed);
 }
 
@@ -182,4 +160,22 @@ void backwardright(int speed, int turnRatio) {
     setMotors(leftSpeed, rightSpeed, -1, -1);
     current_mode = BACKWARDRIGHT;
     printf("后退右转 - 速度: %d, 转向比: %d%%\n", speed, turnRatio);
+}
+
+//随机旋转时间
+void randomspin(int speed, float time){
+    int random_num = rand();
+    if(random_num % 2 == 0){
+        spinleft(speed);
+        sleep(time);
+        stop();
+    }
+    else {
+        spinright(speed);
+	sleep(time);
+	stop();`
+}
+
+void setforwardspeed(int speed){
+    if(current_mode == FORWARD)forward(speed);
 }

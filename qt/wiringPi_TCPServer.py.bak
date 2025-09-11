@@ -1,0 +1,112 @@
+#socket网络编程
+import socket
+#树莓派导入包
+import RPi.GPIO as GPIO
+#导入c库并使用
+import ctypes
+from ctypes import c_float
+#检测系统平台等
+import platform
+#使用time.sleep
+import time
+#使用cv2摄像头
+import cv2
+import pickle
+import struct
+#使用多线程
+import threading
+
+#加载共享库
+controlLib = ctypes.CDLL('./lib/control.so')
+distanceLib = ctypes.CDLL('./lib/distance.so')
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+server_socket.bind(('0.0.0.0', 25500))
+
+server_socket.listen(1)
+print("树莓派TCP服务器正在所有网口的25500端口监听中")
+
+
+
+try:
+    # 等待客户端连接
+    client_socket, client_address = server_socket.accept()
+    print(f"已连接IP ： {client_address}")
+
+    controlLib.init()
+    distanceLib.init()
+  
+
+    speed = 30
+    spincircletime = 2.2
+    spinangle = spincircletime / 5
+
+    while True:
+        data = client_socket.recv(1024).decode('utf-8').strip()
+        if not data:
+            print("停止接受数据")
+            break
+        print(f"收到命令 ： {data}")
+
+        if data == "forward":
+            controlLib.forward(speed)
+        elif data == "backward":
+            controlLib.backward(speed)
+        elif data == "spinleft":
+            controlLib.spinleft(50)
+        elif data == "spinright":
+            controlLib.spinright(50)
+        elif data == "stop":
+            controlLib.stop()
+
+        elif data == "selfdrive":
+            while True:
+                dist = distanceLib.readDist()
+                if dist <= 30:
+                    # 1. 先停止
+                    controlLib.stop()
+                    time.sleep(0.2)
+
+                    # 2. 后退一小段距离，增加安全空间
+                    controlLib.backward(speed)
+                    time.sleep(0.5)
+                    controlLib.stop()
+                    time.sleep(0.2)
+
+                    # 3. 原地左转一个足够大的角度
+                    controlLib.spinleft(50)
+                    time.sleep(1.0)
+                    controlLib.stop()
+                    time.sleep(0.2)
+
+                    # 4. 转弯完成后，跳出本次循环，重新开始探测
+                    continue 
+
+                elif dist > 30: 
+                    controlLib.forward(speed)
+
+                time.sleep(0.1)
+
+
+
+        elif data == "capture":
+            cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+
+                _, buffer = cv2.imencode('.jpg', frame)
+                photo = buffer.tobytes()
+
+                size = len(photo)
+                client_socket.sendall(struct.pack("!I", size))
+                client_socket.sendall(photo)
+
+                time.sleep(0.5)
+
+finally:
+    print("正在清理GPIO端口")
+    GPIO.cleanup()
+    server_socket.close()
